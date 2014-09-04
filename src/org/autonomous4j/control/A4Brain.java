@@ -34,12 +34,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.autonomous4j.tracking.A4jFlightRecorder;
-import org.autonomous4j.tracking.A4jFlightRecorder.Action;
 import org.autonomous4j.tracking.A4jFlightRecorder.Movement;
 
 /**
  *
- * @author Mark A. Heckler
+ * @author Mark Heckler (mark.heckler@gmail.com, @mkheck)
  */
 public class A4Brain {
     private static final A4Brain brain = new A4Brain();
@@ -94,6 +93,7 @@ public class A4Brain {
         if (controller != null) {
             controller.stop();
         }
+        recorder.shutdown();
     }
 
     /**

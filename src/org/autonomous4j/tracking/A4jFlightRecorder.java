@@ -21,18 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.autonomous4j.tracking;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
- * @author mark
+ * @author Mark Heckler (mark.heckler@gmail.com, @mkheck)
  */
-
-
 public class A4jFlightRecorder {
     public enum Action {FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN, 
         HOVER, TAKEOFF, LAND};
@@ -40,8 +43,36 @@ public class A4jFlightRecorder {
     private float yDelta = 0;
     private float zDelta = 0;
     private final static int DEFAULT_SPEED = 20;
-//    private final Movement currentMovement = new Movement();
     private final List<Movement> recording = new ArrayList<>();
+    private static PrintStream flightInProgress = null;
+
+    public A4jFlightRecorder() {
+        flightInProgress = openLog("InProgress.afr");
+    }
+
+    public PrintStream openLog(String fileName) {
+        PrintStream logFile = null;
+        
+        try {
+            logFile = new PrintStream(new FileOutputStream(new File(fileName)), true);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(A4jFlightRecorder.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return logFile;
+    }
+    
+    public void shutdown() {
+        if (flightInProgress != null) {
+            flightInProgress.close();            
+        }
+        
+        try (PrintStream flightComplete = openLog("LastFlight.afr")) {
+            recording.stream().forEach((curMov) -> {
+                flightComplete.println(curMov.getFlightRecordEntry());
+            });
+        }
+    }
     
     public void recordAction(Action action) {
         // Default to reasonable speed
@@ -49,7 +80,9 @@ public class A4jFlightRecorder {
     }
     
     public void recordAction(Action action, int speed) {
-        recording.add(new Movement(action, speed, 0));
+        Movement curMov = new Movement(action, speed, 0);
+        recording.add(curMov);
+        flightInProgress.println(curMov.getFlightRecordEntry());
     }
     
     public void recordDuration(long duration) {
@@ -91,6 +124,14 @@ public class A4jFlightRecorder {
         return recording;
     }
     
+    public static void recordMovement(String reading) {
+        if (flightInProgress != null) {
+            flightInProgress.println(reading);
+        } else {
+            System.out.println(reading);
+        }
+    }
+
     public class Movement {
         Action action;
         int speed = 0;
@@ -127,42 +168,40 @@ public class A4jFlightRecorder {
             this.duration = duration;
         }
         
+        public String getFlightRecordEntry() {
+            return "{" + getActionString() + "," 
+                    + speed + "," 
+                    + duration + "}";
+        }
+        
         @Override
         public String toString() {
-            String movement = "Movement\tAction(";
-            
-            switch (action) {
-            case FORWARD:
-                movement += "forward";
-                break;
-            case BACKWARD:
-                movement += "backward";
-                break;
-            case RIGHT:
-                movement += "right";
-                break;
-            case LEFT:
-                movement += "left";
-                break;
-            case UP:
-                movement += "up";
-                break;
-            case DOWN:
-                movement += "down";
-                break;
-            case HOVER:
-                movement += "hover";
-                break;
-            case TAKEOFF:
-                movement += "takeoff";
-                break;
-            case LAND:
-                movement += "land";
-                break;
+            return "Movement\tAction(" + getActionString() 
+                    + ")\tSpeed(" + speed + ")\tDuration(" + duration + ")";
+        }
+        
+        public String getActionString() {
+            if (action == Action.FORWARD) {
+                return "FORWARD";
+            } else if (action == Action.BACKWARD) {
+                return "BACKWARD";
+            } else if (action == Action.RIGHT) {
+                return "RIGHT";
+            } else if (action == Action.LEFT) {
+                return "LEFT";
+            } else if (action == Action.UP) {
+                return "UP";
+            } else if (action == Action.DOWN) {
+                return "DOWN";
+            } else if (action == Action.HOVER) {
+                return "HOVER";
+            } else if (action == Action.TAKEOFF) {
+                return "TAKEOFF";
+            } else if (action == Action.LAND) {
+                return "LAND";
+            } else {
+                return "UNKNOWN";
             }
-            movement += ")\tSpeed(" + speed + ")\tDuration(" + duration + ")";
-            
-            return movement;
         }
     }
 }

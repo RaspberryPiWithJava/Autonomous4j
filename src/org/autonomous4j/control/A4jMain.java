@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.autonomous4j.control;
 
 import java.util.logging.Level;
@@ -39,14 +38,18 @@ public class A4jMain {
         final A4Brain brain = A4Brain.getInstance();
         if (brain.connect("192.168.1.1")) {
             brain.takeoff();
-            brain.hold(5000);
-            brain.forward(20).doFor(500);
+            brain.hold(6000);
+            brain.forward(20).doFor(800);
             brain.hover().doFor(2000);
             brain.backward(20).doFor(400);
             brain.hover().doFor(2000);
+            brain.goLeft(20).doFor(300);
+            brain.hover().doFor(1000);
+            brain.goRight(20).doFor(600);
+            brain.hover().doFor(1000);            
             brain.land();
-            brain.hold(2000);
-            brain.replay();
+//            brain.hold(2000);
+//            brain.replay();
         }
         brain.disconnect();
 

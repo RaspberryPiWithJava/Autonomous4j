@@ -26,13 +26,14 @@ package org.autonomous4j.control;
 import com.dronecontrol.droneapi.DroneController;
 import com.dronecontrol.droneapi.ParrotDroneController;
 import com.dronecontrol.droneapi.data.Config;
-import com.dronecontrol.droneapi.data.NavData;
-import com.dronecontrol.droneapi.listeners.NavDataListener;
+import com.dronecontrol.droneapi.listeners.ErrorListener;
+import com.dronecontrol.droneapi.listeners.ReadyStateChangeListener;
 import com.dronecontrol.droneapi.listeners.VideoDataListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.autonomous4j.listener.A4NavDataListener;
 import org.autonomous4j.tracking.A4jFlightRecorder;
 import org.autonomous4j.tracking.A4jFlightRecorder.Movement;
 
@@ -73,14 +74,21 @@ public class A4Brain {
                 }
             });
 
-            controller.addNavDataListener(new NavDataListener() {
+            controller.addNavDataListener(new A4NavDataListener());
+            
+            controller.addReadyStateChangeListener(new ReadyStateChangeListener() {
                 @Override
-                public void onNavData(NavData nd) {
-//                    currentNav.
-                    System.out.println("NavData received: " + nd.toString());
-                    System.out.println("NavData VisionData --> " + nd.getVisionData().getTags().toString());
-                    System.out.println("NavData VisionData TS --> " + nd.getVisionData().toString());
+                public void onReadyStateChange(ReadyStateChangeListener.ReadyState rs) {
+                    System.out.println("RSL/Change in ready state: " + rs.toString());
                 }
+                
+            });
+            
+            controller.addErrorListener(new ErrorListener() {
+                @Override
+                public void onError(Throwable thrwbl) {
+                    System.out.println("ERL/Error in drone brain: " + thrwbl.getMessage());
+                }                
             });
         } catch (Exception ex) {
             System.err.println("Exception creating new drone connection: " + ex.getMessage());

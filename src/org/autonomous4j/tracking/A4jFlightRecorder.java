@@ -31,12 +31,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.autonomous4j.interfaces.A4jPublisher;
+import org.autonomous4j.listeners.A4jNavDataListener;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 /**
  *
  * @author Mark Heckler (mark.heckler@gmail.com, @mkheck)
  */
-public class A4jFlightRecorder {
+public class A4jFlightRecorder implements A4jPublisher {
+    private final static String TOP_LEVEL_TOPIC = "a4jflight";
     public enum Action {FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN, 
         HOVER, TAKEOFF, LAND};
     private float xDelta = 0;
@@ -45,9 +51,19 @@ public class A4jFlightRecorder {
     private final static int DEFAULT_SPEED = 20;
     private final List<Movement> recording = new ArrayList<>();
     private static PrintStream flightInProgress = null;
+    private MqttClient client;
+    private final MqttMessage msg;
 
     public A4jFlightRecorder() {
         flightInProgress = openLog("InProgress.afr");
+        msg = new MqttMessage();
+        
+        try {
+            client = new MqttClient("tcp://localhost:1883", "a4jflightrecorder");
+            client.connect();            
+        } catch (MqttException ex) {
+            Logger.getLogger(A4jFlightRecorder.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public PrintStream openLog(String fileName) {
@@ -64,13 +80,19 @@ public class A4jFlightRecorder {
     
     public void shutdown() {
         if (flightInProgress != null) {
-            flightInProgress.close();            
+            try {
+                flightInProgress.close();
+                client.disconnect();
+            } catch (MqttException ex) {
+                Logger.getLogger(A4jFlightRecorder.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         try (PrintStream flightComplete = openLog("LastFlight.afr")) {
             recording.stream().forEach((curMov) -> {
                 flightComplete.println(curMov.getFlightRecordEntry());
             });
+            flightComplete.close();
         }
     }
     
@@ -83,6 +105,7 @@ public class A4jFlightRecorder {
         Movement curMov = new Movement(action, speed, 0);
         recording.add(curMov);
         flightInProgress.println(curMov.getFlightRecordEntry());
+        publish();
     }
     
     public void recordDuration(long duration) {
@@ -124,14 +147,31 @@ public class A4jFlightRecorder {
         return recording;
     }
     
-    public static void recordMovement(String reading) {
-        if (flightInProgress != null) {
-            flightInProgress.println(reading);
-        } else {
-            System.out.println(reading);
-        }
+//    public static void recordMovement(String reading) {
+//        if (flightInProgress != null) {
+//            flightInProgress.println(reading);
+//        } else {
+//            System.out.println(reading);
+//        }
+//    }
+
+    @Override
+    public String getTopLevelTopic() {
+        return TOP_LEVEL_TOPIC;
     }
 
+    @Override
+    public void publish() {
+        try {
+            msg.setPayload((recording.get(recording.size()-1).getActionString() 
+                    + "," + recording.get(recording.size()-1).getSpeed()).getBytes());
+            client.publish(TOP_LEVEL_TOPIC + "/movement", msg);
+        } catch (MqttException ex) {
+            Logger.getLogger(A4jFlightRecorder.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+    
     public class Movement {
         Action action;
         int speed = 0;

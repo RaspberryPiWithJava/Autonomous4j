@@ -35,7 +35,7 @@ public class A4jMain {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        final A4Brain brain = A4Brain.getInstance();
+        final A4jBrain brain = A4jBrain.getInstance();
         if (brain.connect("192.168.1.1")) {
             brain.takeoff();
             brain.hold(6000);
@@ -43,10 +43,10 @@ public class A4jMain {
             brain.hover().doFor(2000);
             brain.backward(20).doFor(400);
             brain.hover().doFor(2000);
-            brain.goLeft(20).doFor(300);
-            brain.hover().doFor(1000);
-            brain.goRight(20).doFor(600);
-            brain.hover().doFor(1000);            
+//            brain.goLeft(20).doFor(300);
+//            brain.hover().doFor(1000);
+//            brain.goRight(20).doFor(600);
+//            brain.hover().doFor(1000);            
             brain.land();
 //            brain.hold(2000);
 //            brain.replay();

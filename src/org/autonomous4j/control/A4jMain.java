@@ -23,8 +23,7 @@
  */
 package org.autonomous4j.control;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.dronecontrol.droneapi.data.enums.LedAnimation;
 
 /**
  *
@@ -39,10 +38,11 @@ public class A4jMain {
         if (brain.connect("192.168.1.1")) {
             brain.takeoff();
             brain.hold(6000);
-            brain.forward(20).doFor(800);
-            brain.hover().doFor(2000);
-            brain.backward(20).doFor(400);
-            brain.hover().doFor(2000);
+            brain.playLedAnimation(LedAnimation.DOUBLE_MISSILE, 10, 5);
+//            brain.forward(20).doFor(800);
+//            brain.hover().doFor(2000);
+//            brain.backward(20).doFor(400);
+//            brain.hover().doFor(2000);
 //            brain.goLeft(20).doFor(300);
 //            brain.hover().doFor(1000);
 //            brain.goRight(20).doFor(600);

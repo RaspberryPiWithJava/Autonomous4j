@@ -23,11 +23,12 @@
  */
 package org.autonomous4j.listeners;
 
-import org.autonomous4j.interfaces.A4jPublisher;
 import com.dronecontrol.droneapi.data.NavData;
+import com.dronecontrol.droneapi.data.VisionTagData;
 import com.dronecontrol.droneapi.listeners.NavDataListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.autonomous4j.interfaces.A4jPublisher;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -38,6 +39,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
  */
 public class A4jNavDataListener implements A4jPublisher, NavDataListener {
     private final static String TOP_LEVEL_TOPIC = "a4jnavdata";
+    private final static int NEW_DATA_DECIMAL_PLACES = 3;
     private final NavData nd;
     private MqttClient client;
     private final MqttMessage msg;
@@ -74,24 +76,28 @@ public class A4jNavDataListener implements A4jPublisher, NavDataListener {
     }    
 
     private boolean isNewData(NavData nd) {
+        long shift = (long) Math.pow(10, NEW_DATA_DECIMAL_PLACES);
+        
         isNewAltitude = this.nd.getAltitude() != nd.getAltitude();
         isNewBatteryLevel = this.nd.getBatteryLevel() != nd.getBatteryLevel();
         
-        // Only compare 1 digit of precision to reduce avalanche of data
+        // Compare the specified number of decimal places.
+        // This allows us to adjust the flow of data.
         isNewPitch = 
-                (float)Math.round(this.nd.getPitch()*10)/10 != (float)Math.round(nd.getPitch()*10)/10;
+                (float)Math.round(this.nd.getPitch()*shift)/shift != (float)Math.round(nd.getPitch()*shift)/shift;
         isNewRoll = 
-                (float)Math.round(this.nd.getRoll()*10)/10 != (float)Math.round(nd.getRoll()*10)/10;
+                (float)Math.round(this.nd.getRoll()*shift)/shift != (float)Math.round(nd.getRoll()*shift)/shift;
         isNewYaw = 
-                (float)Math.round(this.nd.getYaw()*10)/10 != (float)Math.round(nd.getYaw()*10)/10;
+                (float)Math.round(this.nd.getYaw()*shift)/shift != (float)Math.round(nd.getYaw()*shift)/shift;
         isNewSpeedX = 
-                (float)Math.round(this.nd.getSpeedX()*10)/10 != (float)Math.round(nd.getSpeedX()*10)/10;
+                (float)Math.round(this.nd.getSpeedX()*shift)/shift != (float)Math.round(nd.getSpeedX()*shift)/shift;
         isNewSpeedY = 
-                (float)Math.round(this.nd.getSpeedY()*10)/10 != (float)Math.round(nd.getSpeedY()*10)/10;
+                (float)Math.round(this.nd.getSpeedY()*shift)/shift != (float)Math.round(nd.getSpeedY()*shift)/shift;
         isNewSpeedZ = 
-                (float)Math.round(this.nd.getSpeedZ()*10)/10 != (float)Math.round(nd.getSpeedZ()*10)/10;
+                (float)Math.round(this.nd.getSpeedZ()*shift)/shift != (float)Math.round(nd.getSpeedZ()*shift)/shift;
         
-        isNewVisionData = this.nd.getVisionData().getTags() != nd.getVisionData().getTags();
+        //isNewVisionData = this.nd.getVisionData().getTags() != nd.getVisionData().getTags();
+        isNewVisionData = true;
         
         return isNewAltitude || isNewBatteryLevel || isNewPitch || isNewRoll ||
                 isNewYaw || isNewSpeedX || isNewSpeedY || isNewSpeedZ || 
@@ -149,8 +155,22 @@ public class A4jNavDataListener implements A4jPublisher, NavDataListener {
                 client.publish(TOP_LEVEL_TOPIC + "/yaw", msg);
             }
             if (isNewVisionData) {
-                msg.setPayload(String.valueOf(this.nd.getVisionData()).getBytes());
-                client.publish(TOP_LEVEL_TOPIC + "/visiondata", msg);
+//                msg.setPayload(String.valueOf(this.nd.getVisionData()).getBytes());
+//                client.publish(TOP_LEVEL_TOPIC + "/visiondata", msg);
+
+                if (!nd.getVisionData().getTags().isEmpty()) {
+                    String vInfo;
+                    for (VisionTagData vtd : nd.getVisionData().getTags()) {
+                        vInfo = "Distance (" + vtd.getDistance() + 
+                                ") Height (" + vtd.getHeight() + 
+                                ") Width (" + vtd.getWidth() + 
+                                ") X (" + vtd.getX() + 
+                                ") Y (" + vtd.getY() +
+                                ") Orientation Angle (" + vtd.getOrientationAngle() + ")";
+                        msg.setPayload(vInfo.getBytes());
+                        client.publish(TOP_LEVEL_TOPIC + "/visiondata", msg);
+                    }
+                }
             }
         } catch (MqttException ex) {
             Logger.getLogger(A4jNavDataListener.class.getName()).log(Level.SEVERE, null, ex);

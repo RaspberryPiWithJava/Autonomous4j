@@ -45,6 +45,7 @@ public class A4jVideoDataListener implements A4jPublisher, VideoDataListener {
 
     public A4jVideoDataListener() {
         msg = new MqttMessage();
+        msg.setQos(0); // Deliver at most once (fire & forget) - crucial for video feed
         
         try {
             client = new MqttClient("tcp://localhost:1883", "a4jvideodatalistener");

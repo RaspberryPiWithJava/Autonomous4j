@@ -25,11 +25,10 @@ package org.autonomous4j.control;
 
 import com.dronecontrol.droneapi.DroneController;
 import com.dronecontrol.droneapi.ParrotDroneController;
+import com.dronecontrol.droneapi.commands.composed.PlayLedAnimationCommand;
 import com.dronecontrol.droneapi.data.Config;
-import com.dronecontrol.droneapi.listeners.ErrorListener;
-import com.dronecontrol.droneapi.listeners.ReadyStateChangeListener;
-import com.dronecontrol.droneapi.listeners.VideoDataListener;
-import java.awt.image.BufferedImage;
+import com.dronecontrol.droneapi.data.LoginData;
+import com.dronecontrol.droneapi.data.enums.LedAnimation;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,11 +46,13 @@ import org.autonomous4j.tracking.A4jFlightRecorder.Movement;
 public class A4jBrain {
     private static final A4jBrain brain = new A4jBrain();
     private DroneController controller;
+    private Config cfg;
     //private NavData currentNav;
     private final A4jFlightRecorder recorder;
     private boolean isRecording;
 
     private A4jBrain() {
+        cfg = new Config("Autonomous4j Test", "My Profile", 0);
         this.recorder = new A4jFlightRecorder();
         isRecording = true;
     }
@@ -67,7 +68,7 @@ public class A4jBrain {
     public boolean connect(String ipAddress) {
         try {
             controller = ParrotDroneController.build();
-            Config cfg = new Config("Autonomous4j Test", "My Profile", 0);
+            //cfg = new Config("Autonomous4j Test", "My Profile", 0);
             controller.start(cfg);
 
             controller.addVideoDataListener(new A4jVideoDataListener());
@@ -208,6 +209,28 @@ public class A4jBrain {
         return move(-perc2float(speed), 0f, 0f, 0f);
     }
 
+    public A4jBrain playLedAnimation(float frequency, int durationSeconds) {
+        // "Default" LED animation sequence is blank for now
+        playLedAnimation(LedAnimation.BLANK, frequency, durationSeconds);
+        return this;
+    }
+    
+    public A4jBrain playLedAnimation(LedAnimation animation, float frequency, int durationSeconds) {
+        if (isRecording) {
+            recorder.recordAction(A4jFlightRecorder.Action.LIGHTS, (int) frequency);
+        }
+        controller.executeCommandsAsync(
+                new PlayLedAnimationCommand(cfg.getLoginData(), 
+                        animation, frequency, durationSeconds));
+//        controller.executeCommands(
+//                new PlayLedAnimationCommand(cfg.getLoginData(),
+//                        animation, frequency, durationSeconds));
+        hold(durationSeconds * 1000);
+        System.out.println("Blinking " + animation.name() + ", Frequency: " + 
+            frequency + " for " + durationSeconds + " seconds.");
+        return this;
+    }
+    
     public A4jBrain replay() {
         List<Movement> recording = recorder.getRecording();
         
@@ -242,6 +265,9 @@ public class A4jBrain {
                     break;
                 case LAND:
                     land();
+                    break;
+                case LIGHTS:
+                    playLedAnimation(curMov.getSpeed(), (int) curMov.getDuration()/1000);
                     break;
             }
             hold(curMov.getDuration());

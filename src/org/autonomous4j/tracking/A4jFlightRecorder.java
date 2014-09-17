@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.autonomous4j.interfaces.A4jPublisher;
-import org.autonomous4j.listeners.A4jNavDataListener;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -44,7 +43,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 public class A4jFlightRecorder implements A4jPublisher {
     private final static String TOP_LEVEL_TOPIC = "a4jflight";
     public enum Action {FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN, 
-        HOVER, TAKEOFF, LAND};
+        HOVER, TAKEOFF, LAND, LIGHTS};
     private float xDelta = 0;
     private float yDelta = 0;
     private float zDelta = 0;
@@ -133,7 +132,7 @@ public class A4jFlightRecorder implements A4jPublisher {
                 zDelta -= duration;
                 break;
             //default:
-            // No measured adjustments for takeoff, hover, or land.
+            // No measured adjustments for takeoff, hover, land, or lights.
         }
     }
 
@@ -239,6 +238,8 @@ public class A4jFlightRecorder implements A4jPublisher {
                 return "TAKEOFF";
             } else if (action == Action.LAND) {
                 return "LAND";
+            } else if (action == Action.LIGHTS) {
+                return "LIGHTS";
             } else {
                 return "UNKNOWN";
             }

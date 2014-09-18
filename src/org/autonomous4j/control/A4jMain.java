@@ -46,7 +46,16 @@ public class A4jMain {
 //            brain.goLeft(20).doFor(300);
 //            brain.hover().doFor(1000);
 //            brain.goRight(20).doFor(600);
-//            brain.hover().doFor(1000);            
+//            brain.hover().doFor(1000);
+
+            brain.forward(20).doFor(600);
+            brain.hover().hold(2000);
+            brain.goRight(20).doFor(600);
+            brain.hover().hold(2000);
+            brain.backward(20).doFor(200);
+            brain.hover().hold(2000);
+            brain.goHome();
+            
             brain.land();
 //            brain.hold(2000);
 //            brain.replay();

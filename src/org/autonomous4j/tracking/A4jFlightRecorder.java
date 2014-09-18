@@ -109,31 +109,7 @@ public class A4jFlightRecorder implements A4jPublisher {
     
     public void recordDuration(long duration) {
         // Update the last recorded movement's duration
-        recording.get(recording.size()-1).setDuration(duration);
-        
-        // Track the movement delta for this flight
-        switch (recording.get(recording.size()-1).getAction()) {
-            case FORWARD:
-                xDelta += duration;
-                break;
-            case BACKWARD:
-                xDelta -= duration;
-                break;
-            case RIGHT:
-                yDelta += duration;
-                break;
-            case LEFT:
-                yDelta -= duration;
-                break;
-            case UP:
-                zDelta += duration;
-                break;
-            case DOWN:
-                zDelta -= duration;
-                break;
-            //default:
-            // No measured adjustments for takeoff, hover, land, or lights.
-        }
+        recording.get(recording.size()-1).setDuration(duration);        
     }
 
     public List<Movement> getRecording() {
@@ -141,9 +117,44 @@ public class A4jFlightRecorder implements A4jPublisher {
     }
     
     public List<Movement> home() {
-        // MAH: need to compare speeds of all steps. If same, can use deltas to 
-        // calculate a shortcut; otherwise, just return steps for retracing.
-        return recording;
+        recording.stream().forEach((curMov) -> {
+            // Track the movement delta for this flight
+            switch (curMov.getAction()) {
+                case FORWARD:
+                    xDelta += (curMov.getSpeed() * curMov.getDuration() / 100);
+                    break;
+                case BACKWARD:
+                    xDelta -= (curMov.getSpeed() * curMov.getDuration() / 100);
+                    break;
+                case RIGHT:
+                    yDelta += (curMov.getSpeed() * curMov.getDuration() / 100);
+                    break;
+                case LEFT:
+                    yDelta -= (curMov.getSpeed() * curMov.getDuration() / 100);
+                    break;
+                case UP:
+                    zDelta += (curMov.getSpeed() * curMov.getDuration() / 100);
+                    break;
+                case DOWN:
+                    zDelta -= (curMov.getSpeed() * curMov.getDuration() / 100);
+                    break;
+                //default:
+                // No measured adjustments for takeoff, hover, land, or lights.
+            }
+        });
+        
+        List<Movement> homeRec = new ArrayList<>(3);
+        homeRec.add(new Movement((xDelta < 0 ? Action.FORWARD : Action.BACKWARD), 
+                DEFAULT_SPEED, (long) xDelta*100/DEFAULT_SPEED));
+        homeRec.add(new Movement((yDelta < 0 ? Action.RIGHT : Action.LEFT), 
+                DEFAULT_SPEED, (long) yDelta*100/DEFAULT_SPEED));
+        if (zDelta != 0) {
+            // MAH: In honor of The Wrath of Khan, we test for a change in the 
+            // third dimension. Technically speaking, we should also test x & y.
+            homeRec.add(new Movement((zDelta < 0 ? Action.UP : Action.DOWN), 
+                    DEFAULT_SPEED, (long) zDelta*100/DEFAULT_SPEED));
+        }
+        return homeRec;
     }
     
 //    public static void recordMovement(String reading) {

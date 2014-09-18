@@ -231,13 +231,21 @@ public class A4jBrain {
         return this;
     }
     
+    public A4jBrain goHome() {
+        processRecordedMovements(recorder.home());
+        return this;
+    }
+    
     public A4jBrain replay() {
-        List<Movement> recording = recorder.getRecording();
-        
+        processRecordedMovements(recorder.getRecording());
+        return this;
+    }
+    
+    private void processRecordedMovements(List<Movement> moves) {
         // Disable recording for playback
         isRecording = false;
 
-        for (Movement curMov : recording) {
+        for (Movement curMov : moves) {
             switch(curMov.getAction()) {
                 case FORWARD:
                     forward(curMov.getSpeed());
@@ -275,8 +283,7 @@ public class A4jBrain {
         }
             
         // Re-enable recording
-        isRecording = true;
-        return this;
+        isRecording = true;    
     }
     
     private float limit(float f, float min, float max) {

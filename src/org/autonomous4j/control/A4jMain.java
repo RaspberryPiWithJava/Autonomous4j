@@ -39,15 +39,6 @@ public class A4jMain {
             brain.takeoff();
             brain.hold(6000);
             brain.playLedAnimation(LedAnimation.DOUBLE_MISSILE, 10, 5);
-//            brain.forward(20).doFor(800);
-//            brain.hover().doFor(2000);
-//            brain.backward(20).doFor(400);
-//            brain.hover().doFor(2000);
-//            brain.goLeft(20).doFor(300);
-//            brain.hover().doFor(1000);
-//            brain.goRight(20).doFor(600);
-//            brain.hover().doFor(1000);
-
             brain.forward(20).doFor(600);
             brain.hover().hold(2000);
             brain.goRight(20).doFor(600);

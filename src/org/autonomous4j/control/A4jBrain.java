@@ -296,7 +296,7 @@ public class A4jBrain {
         gaz = limit(gaz, -1f, 1f);
         yaw = limit(yaw, -1f, 1f);
         
-        controller.move(roll, pitch, gaz, yaw);
+        controller.move(roll, pitch, yaw, gaz);
         
         return this;
     }

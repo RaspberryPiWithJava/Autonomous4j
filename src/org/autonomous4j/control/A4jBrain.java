@@ -71,7 +71,7 @@ public class A4jBrain {
             //cfg = new Config("Autonomous4j Test", "My Profile", 0);
             controller.start(cfg);
 
-            controller.addVideoDataListener(new A4jVideoDataListener());
+            //controller.addVideoDataListener(new A4jVideoDataListener());
             controller.addNavDataListener(new A4jNavDataListener());    
             controller.addReadyStateChangeListener(new A4jReadyStateChangeListener());
             controller.addErrorListener(new A4jErrorListener());

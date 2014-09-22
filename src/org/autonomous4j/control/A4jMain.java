@@ -36,55 +36,85 @@ public class A4jMain {
     public static void main(String[] args) {
         final A4jBrain brain = A4jBrain.getInstance();
         if (brain.connect("192.168.1.1")) {
-            brain.takeoff().hold(6000);
-            // Test flight
-            brain.playLedAnimation(LedAnimation.BLING_GREEN, 10, 3);
-            brain.hover().hold(2000);
-            brain.playLedAnimation(LedAnimation.BLINK_RED, 10, 3);
-            brain.hover().hold(2000);
-            brain.playLedAnimation(LedAnimation.FIRE, 10, 3);
-            brain.hover().hold(2000);
-            brain.playLedAnimation(LedAnimation.DOUBLE_MISSILE, 10, 3);
-            brain.hover().hold(2000);
-
-            
-            
-//            brain.forward(20).doFor(600);
-//            brain.hover().hold(2000);
-//            brain.goRight(20).doFor(600);
-//            brain.hover().hold(2000);
-//            brain.backward(20).doFor(400);
-//            brain.hover().hold(2000);
-//            brain.goLeft(20).doFor(900);
-//            brain.hover().hold(2000);
-//            brain.forward(20).doFor(500);
-//            brain.hover().hold(2000);
-
-            // For homing flight, just comment the movement lines above and 
-            // uncomment the following lines
-//            brain.forward(20).doFor(400);
-//            brain.hover().hold(2000);
-//            brain.goRight(20).doFor(400);
-//            brain.hover().hold(2000);
-//            brain.forward(20).doFor(400);
-//            brain.hover().hold(2000);
-//            brain.goRight(20).doFor(400);
-//            brain.hover().hold(2000);
-//            brain.backward(20).doFor(400);
-//            brain.hover().hold(2000);
-//            brain.goHome();
-//            brain.hover().hold(2000);
-
-            brain.land();
-            
-            // For replay, just uncomment the following two lines
-//            brain.hold(2000);
-//            brain.replay();
-            
+            // Comment/uncomment for desired demo flight. May not want to combine
+            // them without testing first in unoccupied room. :)
+//            doDemoFlightBox(brain);
+//            doDemoFlightHome(brain);
+//            doDemoFlightReplay(brain);
+            doDemoFlightLeds(brain);
+//            doDemoFlightCocarde(brain);
         }
         brain.disconnect();
 
         System.out.println("Exiting. So long and thanks for all the fish.");
         System.exit(0);
+    }
+    
+    private static void doDemoFlightBox(A4jBrain brain) {
+        brain.takeoff().hold(6000);
+        
+        brain.forward(20).doFor(600);
+        brain.hover().hold(2000);
+        brain.goRight(20).doFor(600);
+        brain.hover().hold(2000);
+        brain.backward(20).doFor(400);
+        brain.hover().hold(2000);
+        brain.goLeft(20).doFor(900);
+        brain.hover().hold(2000);
+        brain.forward(20).doFor(500);
+        brain.hover().hold(2000);
+        
+        brain.land();
+    }
+
+    private static void doDemoFlightHome(A4jBrain brain) {
+        brain.takeoff().hold(6000);
+
+        brain.forward(20).doFor(400);
+        brain.hover().hold(2000);
+        brain.goRight(20).doFor(400);
+        brain.hover().hold(2000);
+        brain.forward(20).doFor(400);
+        brain.hover().hold(2000);
+        brain.goRight(20).doFor(400);
+        brain.hover().hold(2000);
+        brain.backward(20).doFor(400);
+        brain.hover().hold(2000);
+        brain.goHome();
+        brain.hover().hold(2000);
+
+        brain.land();
+    }
+    
+    private static void doDemoFlightReplay(A4jBrain brain) {
+        doDemoFlightBox(brain);
+        // Added two-second wait while on ground for effect
+        brain.hold(2000);
+        brain.replay();
+    }
+    
+    private static void doDemoFlightCocarde(A4jBrain brain) {
+        brain.takeoff().hold(6000);
+        // Hover in place over cocarde/roundel, allowing demo of push/recover
+        brain.hover().doFor(3000);
+        brain.playLedAnimation(LedAnimation.LEFT_GREEN_RIGHT_RED, 10, 3);
+        brain.hover().doFor(3000);
+        
+        brain.land();
+    }        
+
+    private static void doDemoFlightLeds(A4jBrain brain) {
+        brain.takeoff().hold(6000);
+        
+        brain.playLedAnimation(LedAnimation.BLING_GREEN, 10, 3);
+        brain.hover().hold(2000);
+        brain.playLedAnimation(LedAnimation.BLINK_RED, 10, 3);
+        brain.hover().hold(2000);
+//        brain.playLedAnimation(LedAnimation.FIRE, 10, 3);
+//        brain.hover().hold(2000);
+//        brain.playLedAnimation(LedAnimation.DOUBLE_MISSILE, 10, 3);
+//        brain.hover().hold(2000);
+        
+        brain.land();
     }
 }

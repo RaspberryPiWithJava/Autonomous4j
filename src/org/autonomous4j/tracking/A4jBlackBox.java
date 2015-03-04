@@ -40,10 +40,12 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
  *
  * @author Mark Heckler (mark.heckler@gmail.com, @mkheck)
  */
-public class A4jFlightRecorder implements A4jPublisher {
+public class A4jBlackBox implements A4jPublisher {
     private final static String TOP_LEVEL_TOPIC = "a4jflight";
+//    public enum Action {FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN, 
+//        HOVER, TAKEOFF, LAND, LIGHTS};
     public enum Action {FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN, 
-        HOVER, TAKEOFF, LAND, LIGHTS};
+        STAY, TAKEOFF, LAND, LIGHTS};
     private float xDelta = 0;
     private float yDelta = 0;
     private float zDelta = 0;
@@ -53,7 +55,7 @@ public class A4jFlightRecorder implements A4jPublisher {
     private MqttClient client;
     private final MqttMessage msg;
 
-    public A4jFlightRecorder() {
+    public A4jBlackBox() {
         flightInProgress = openLog("InProgress.afr");
         msg = new MqttMessage();
         
@@ -61,7 +63,7 @@ public class A4jFlightRecorder implements A4jPublisher {
             client = new MqttClient("tcp://localhost:1883", "a4jflightrecorder");
             client.connect();            
         } catch (MqttException ex) {
-            Logger.getLogger(A4jFlightRecorder.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(A4jBlackBox.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -71,7 +73,7 @@ public class A4jFlightRecorder implements A4jPublisher {
         try {
             logFile = new PrintStream(new FileOutputStream(new File(fileName)), true);
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(A4jFlightRecorder.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(A4jBlackBox.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return logFile;
@@ -83,7 +85,7 @@ public class A4jFlightRecorder implements A4jPublisher {
                 flightInProgress.close();
                 client.disconnect();
             } catch (MqttException ex) {
-                Logger.getLogger(A4jFlightRecorder.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(A4jBlackBox.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
@@ -177,7 +179,7 @@ public class A4jFlightRecorder implements A4jPublisher {
                     + "," + recording.get(recording.size()-1).getSpeed()).getBytes());
             client.publish(TOP_LEVEL_TOPIC + "/movement", msg);
         } catch (MqttException ex) {
-            Logger.getLogger(A4jFlightRecorder.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(A4jBlackBox.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
@@ -243,8 +245,8 @@ public class A4jFlightRecorder implements A4jPublisher {
                 return "UP";
             } else if (action == Action.DOWN) {
                 return "DOWN";
-            } else if (action == Action.HOVER) {
-                return "HOVER";
+            } else if (action == Action.STAY) { // Was HOVER in v1.
+                return "STAY";
             } else if (action == Action.TAKEOFF) {
                 return "TAKEOFF";
             } else if (action == Action.LAND) {

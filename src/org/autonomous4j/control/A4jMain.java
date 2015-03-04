@@ -34,7 +34,7 @@ public class A4jMain {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        final A4jBrain brain = A4jBrain.getInstance();
+        final A4jBrainA brain = A4jBrainA.getInstance();
         if (brain.connect("192.168.1.1")) {
             // Comment/uncomment for desired demo flight. May not want to combine
             // them without testing first in unoccupied room. :)
@@ -50,7 +50,7 @@ public class A4jMain {
         System.exit(0);
     }
     
-    private static void doDemoFlightBox(A4jBrain brain) {
+    private static void doDemoFlightBox(A4jBrainA brain) {
         brain.takeoff().hold(6000);
         
         brain.forward(20).doFor(600);
@@ -67,7 +67,7 @@ public class A4jMain {
         brain.land();
     }
 
-    private static void doDemoFlightHome(A4jBrain brain) {
+    private static void doDemoFlightHome(A4jBrainA brain) {
         brain.takeoff().hold(6000);
 
         brain.forward(20).doFor(400);
@@ -86,14 +86,14 @@ public class A4jMain {
         brain.land();
     }
     
-    private static void doDemoFlightReplay(A4jBrain brain) {
+    private static void doDemoFlightReplay(A4jBrainA brain) {
         doDemoFlightBox(brain);
         // Added two-second wait while on ground for effect
         brain.hold(2000);
         brain.replay();
     }
     
-    private static void doDemoFlightCocarde(A4jBrain brain) {
+    private static void doDemoFlightCocarde(A4jBrainA brain) {
         brain.takeoff().hold(6000);
         // Hover in place over cocarde/roundel, allowing demo of push/recover
         brain.hover().doFor(3000);
@@ -103,7 +103,7 @@ public class A4jMain {
         brain.land();
     }        
 
-    private static void doDemoFlightLeds(A4jBrain brain) {
+    private static void doDemoFlightLeds(A4jBrainA brain) {
         brain.takeoff().hold(6000);
         
         brain.playLedAnimation(LedAnimation.BLING_GREEN, 10, 3);

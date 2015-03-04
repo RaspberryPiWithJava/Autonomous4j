@@ -23,6 +23,7 @@
  */
 package org.autonomous4j.control;
 
+import org.autonomous4j.interfaces.A4jBrain3D;
 import com.dronecontrol.droneapi.DroneController;
 import com.dronecontrol.droneapi.ParrotDroneController;
 import com.dronecontrol.droneapi.commands.composed.PlayLedAnimationCommand;
@@ -36,31 +37,32 @@ import org.autonomous4j.listeners.A4jErrorListener;
 import org.autonomous4j.listeners.A4jNavDataListener;
 import org.autonomous4j.listeners.A4jReadyStateChangeListener;
 import org.autonomous4j.listeners.A4jVideoDataListener;
-import org.autonomous4j.tracking.A4jFlightRecorder;
-import org.autonomous4j.tracking.A4jFlightRecorder.Movement;
+import org.autonomous4j.tracking.A4jBlackBox;
+import org.autonomous4j.tracking.A4jBlackBox.Movement;
 
 /**
  *
  * @author Mark Heckler (mark.heckler@gmail.com, @mkheck)
  */
-public class A4jBrain {
-    private static final A4jBrain brain = new A4jBrain();
+public class A4jBrainA implements A4jBrain3D {
+    private static final A4jBrainA brain = new A4jBrainA();
     private DroneController controller;
     private Config cfg;
     //private NavData currentNav;
-    private final A4jFlightRecorder recorder;
+    private final A4jBlackBox recorder;
     private boolean isRecording;
 
-    private A4jBrain() {
+    private A4jBrainA() {
         cfg = new Config("Autonomous4j Test", "My Profile", 0);
-        this.recorder = new A4jFlightRecorder();
+        this.recorder = new A4jBlackBox();
         isRecording = true;
     }
 
-    public static A4jBrain getInstance() {
+    public static A4jBrainA getInstance() {
         return brain;
     }
 
+    @Override
     public boolean connect() {
         return connect("192.168.1.1");
     }
@@ -82,6 +84,7 @@ public class A4jBrain {
         return true;
     }
 
+    @Override
     public void disconnect() {
         if (controller != null) {
             controller.stop();
@@ -92,14 +95,16 @@ public class A4jBrain {
     /**
      * Convenience (pass-through) method for more fluent API.
      * @param ms Long variable specifying a number of milliseconds.
-     * @return A4jBrain object (allows command chaining/fluency.
+     * @return A4jBrainA object (allows command chaining/fluency.
      * @see #hold(long)
      */
-    public A4jBrain doFor(long ms) {
+    @Override
+    public A4jBrainA doFor(long ms) {
         return hold(ms);
     }
     
-    public A4jBrain hold(long ms) {
+    @Override
+    public A4jBrainA hold(long ms) {
         System.out.println("Hold for " + ms + " milliseconds...");
         try {
             Thread.sleep(ms);
@@ -108,17 +113,23 @@ public class A4jBrain {
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
-            Logger.getLogger(A4jBrain.class.getName()).log(Level.SEVERE, null, e);
+            Logger.getLogger(A4jBrainA.class.getName()).log(Level.SEVERE, null, e);
         }
         
         return this;
     }
+    
+    @Override
+    public A4jBrainA stay() {
+        return hover();
+    }
 
-    public A4jBrain hover() {
+    @Deprecated
+    public A4jBrainA hover() {
         System.out.println("--Hover--");
         controller.move(0, 0, 0, 0);
         if (isRecording) {
-            recorder.recordAction(A4jFlightRecorder.Action.HOVER);
+            recorder.recordAction(A4jBlackBox.Action.STAY);
         }
         
         return this;
@@ -128,96 +139,116 @@ public class A4jBrain {
         System.out.println("Land.");
         controller.land();
         if (isRecording) {
-            recorder.recordAction(A4jFlightRecorder.Action.LAND);
+            recorder.recordAction(A4jBlackBox.Action.LAND);
         }
     }
 
-    public A4jBrain takeoff() {
+    public A4jBrainA takeoff() {
         System.out.println("Takeoff!");
         controller.takeOff();
         if (isRecording) {
-            recorder.recordAction(A4jFlightRecorder.Action.TAKEOFF);
+            recorder.recordAction(A4jBlackBox.Action.TAKEOFF);
         }
         
         return this;
     }
 
-    public A4jBrain forward(int speed) {
+    @Override
+    public A4jBrainA forward() {
+        return forward(100);
+    }
+
+    public A4jBrainA forward(int speed) {
         System.out.println("Forward @" + speed);
         if (isRecording) {
-            recorder.recordAction(A4jFlightRecorder.Action.FORWARD, speed);
+            recorder.recordAction(A4jBlackBox.Action.FORWARD, speed);
         }
         
         return move(0f, -perc2float(speed), 0f, 0f);
     }
 
-    public A4jBrain backward(int speed) {
+    @Override
+    public A4jBrainA backward() {
+        return backward(100);
+    }
+    
+    public A4jBrainA backward(int speed) {
         System.out.println("Backward @" + speed);
         if (isRecording) {
-            recorder.recordAction(A4jFlightRecorder.Action.BACKWARD, speed);
+            recorder.recordAction(A4jBlackBox.Action.BACKWARD, speed);
         }
 
         return move(0f, perc2float(speed), 0f, 0f);
     }
 
 //  MAH: will need to revisit this to accommodate either 90 degree turns ONLY or odd angles.
-//    public A4jBrain spinRight(int speed) {
+//    public A4jBrainA spinRight(int speed) {
 //        System.out.println("spinRight @" + speed);
-//        //recorder.recordAction(A4jFlightRecorder.Action.FORWARD);
+//        //recorder.recordAction(A4jBlackBox.Action.FORWARD);
 //        
 //        return move(0f, 0f, 0f, perc2float(speed));
 //    }
 //
-//    public A4jBrain spinLeft(int speed) {
+//    public A4jBrainA spinLeft(int speed) {
 //        System.out.println("spinLeft @" + speed);
 //        return move(0f, 0f, 0f, -perc2float(speed));
 //    }
+    
+    @Override
+    public A4jBrain3D up() {
+        return up(100);
+    }
 
-    public A4jBrain up(int speed) {
+    public A4jBrainA up(int speed) {
         System.out.println("up @" + speed);
         if (isRecording) {
-            recorder.recordAction(A4jFlightRecorder.Action.UP, speed);
+            recorder.recordAction(A4jBlackBox.Action.UP, speed);
         }
 
         return move(0f, 0f, perc2float(speed), 0f);
     }
 
-    public A4jBrain down(int speed) {
+    @Override
+    public A4jBrain3D down() {
+        return down(100);
+    }
+
+    public A4jBrainA down(int speed) {
         System.out.println("down @" + speed);
         if (isRecording) {
-            recorder.recordAction(A4jFlightRecorder.Action.DOWN, speed);
+            recorder.recordAction(A4jBlackBox.Action.DOWN, speed);
         }
 
         return move(0f, 0f, -perc2float(speed), 0f);
     }
 
-    public A4jBrain goRight(int speed) {
+    public A4jBrainA goRight(int speed) {
         System.out.println("goRight @" + speed);
         if (isRecording) {
-            recorder.recordAction(A4jFlightRecorder.Action.RIGHT, speed);
+            recorder.recordAction(A4jBlackBox.Action.RIGHT, speed);
         }
 
         return move(perc2float(speed), 0f, 0f, 0f);
     }
 
-    public A4jBrain goLeft(int speed) {
+    public A4jBrainA goLeft(int speed) {
         System.out.println("goLeft @" + speed);
         if (isRecording) {
-            recorder.recordAction(A4jFlightRecorder.Action.LEFT, speed);
+            recorder.recordAction(A4jBlackBox.Action.LEFT, speed);
         }
 
         return move(-perc2float(speed), 0f, 0f, 0f);
     }
 
-    public A4jBrain playLedAnimation(float frequency, int durationSeconds) {
+    public A4jBrainA playLedAnimation(float frequency, int durationSeconds) {
         // "Default" LED animation sequence is blank for now
         playLedAnimation(LedAnimation.BLANK, frequency, durationSeconds);
         return this;
     }
     
-    public A4jBrain playLedAnimation(LedAnimation animation, float frequency, int durationSeconds) {
+    public A4jBrainA playLedAnimation(LedAnimation animation, float frequency, int durationSeconds) {
         if (isRecording) {
-            recorder.recordAction(A4jFlightRecorder.Action.LIGHTS, (int) frequency);
+            recorder.recordAction(A4jBlackBox.Action.LIGHTS, (int) frequency);
         }
         controller.executeCommandsAsync(
                 new PlayLedAnimationCommand(cfg.getLoginData(), 
@@ -231,17 +262,34 @@ public class A4jBrain {
         return this;
     }
     
-    public A4jBrain goHome() {
+    @Override
+    public A4jBrainA goHome() {
         processRecordedMovements(recorder.home());
         return this;
     }
     
-    public A4jBrain replay() {
+    @Override
+    public A4jBrainA replay() {
         processRecordedMovements(recorder.getRecording());
         return this;
     }
     
-    private void processRecordedMovements(List<Movement> moves) {
+    @Override
+    public A4jBrainA left() {
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        System.out.println("Turn to the left.");
+        return this;
+    }
+
+    @Override
+    public A4jBrainA right() {
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        System.out.println("Turn to the right.");
+        return this;
+    }
+    
+    @Override
+    public void processRecordedMovements(List<Movement> moves) {
         // Disable recording for playback
         isRecording = false;
 
@@ -265,8 +313,8 @@ public class A4jBrain {
                 case DOWN:
                     down(curMov.getSpeed());
                     break;
-                case HOVER:
-                    hover();
+                case STAY:
+                    stay();
                     break;
                 case TAKEOFF:
                     takeoff();
@@ -290,7 +338,7 @@ public class A4jBrain {
         return (f > max ? max : (f < min ? min : f));
     }
 
-    public A4jBrain move(float roll ,float pitch, float gaz, float yaw) {
+    public A4jBrainA move(float roll ,float pitch, float gaz, float yaw) {
         roll = limit(roll, -1f, 1f);
         pitch = limit(pitch, -1f, 1f);
         gaz = limit(gaz, -1f, 1f);

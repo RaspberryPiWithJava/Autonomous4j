@@ -33,10 +33,10 @@ import com.dronecontrol.droneapi.data.enums.LedAnimation;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.autonomous4j.listeners.A4jErrorListener;
-import org.autonomous4j.listeners.A4jNavDataListener;
-import org.autonomous4j.listeners.A4jReadyStateChangeListener;
-import org.autonomous4j.listeners.A4jVideoDataListener;
+import org.autonomous4j.listeners.xyz.A4jErrorListener;
+import org.autonomous4j.listeners.xyz.A4jNavDataListener;
+import org.autonomous4j.listeners.xyz.A4jReadyStateChangeListener;
+import org.autonomous4j.listeners.xyz.A4jVideoDataListener;
 import org.autonomous4j.tracking.A4jBlackBox;
 import org.autonomous4j.tracking.A4jBlackBox.Movement;
 

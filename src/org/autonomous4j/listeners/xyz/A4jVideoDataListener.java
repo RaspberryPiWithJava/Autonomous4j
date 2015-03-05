@@ -21,12 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.autonomous4j.listeners;
+package org.autonomous4j.listeners.xyz;
 
-import org.autonomous4j.interfaces.A4jPublisher;
-import com.dronecontrol.droneapi.listeners.ReadyStateChangeListener;
+import com.dronecontrol.droneapi.listeners.VideoDataListener;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.autonomous4j.interfaces.A4jPublisher;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -35,21 +37,21 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
  *
  * @author Mark Heckler (mark.heckler@gmail.com, @mkheck)
  */
-public class A4jReadyStateChangeListener implements A4jPublisher, ReadyStateChangeListener {
-    private final static String TOP_LEVEL_TOPIC = "a4jreadystatedata";
-    private ReadyState rs;
+public class A4jVideoDataListener implements A4jPublisher, VideoDataListener {
+    private final static String TOP_LEVEL_TOPIC = "a4jvideodata";
     private MqttClient client;
     private final MqttMessage msg;
+    private BufferedImage img;
 
-    public A4jReadyStateChangeListener() {
-        this.rs = ReadyState.NOT_READY;
+    public A4jVideoDataListener() {
         msg = new MqttMessage();
+        msg.setQos(0); // Deliver at most once (fire & forget) - crucial for video feed
         
         try {
-            client = new MqttClient("tcp://localhost:1883", "a4jreadystatechangelistener");
-            client.connect();            
+            client = new MqttClient("tcp://localhost:1883", "a4jvideodatalistener");
+            client.connect();
         } catch (MqttException ex) {
-            Logger.getLogger(A4jReadyStateChangeListener.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(A4jVideoDataListener.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -61,17 +63,17 @@ public class A4jReadyStateChangeListener implements A4jPublisher, ReadyStateChan
     @Override
     public void publish() {
         try {
-            msg.setPayload((rs == ReadyState.READY ? "READY" : "NOT READY").getBytes());
-            client.publish(TOP_LEVEL_TOPIC + "/state", msg);
+            msg.setPayload(((DataBufferByte) img.getData().getDataBuffer()).getData());
+            client.publish(TOP_LEVEL_TOPIC + "/image", msg);
         } catch (MqttException ex) {
-            Logger.getLogger(A4jReadyStateChangeListener.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(A4jVideoDataListener.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     @Override
-    public void onReadyStateChange(ReadyState rs) {
-        if (this.rs != rs) {
-            publish();
-        }
-    }    
+    public void onVideoData(BufferedImage bi) {
+        img = bi;
+        publish();
+    }
+    
 }

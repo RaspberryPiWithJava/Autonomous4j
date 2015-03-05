@@ -26,6 +26,7 @@ package org.autonomous4j.physical;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Observable;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,7 +38,7 @@ import jssc.SerialPortException;
  *
  * @author Mark Heckler (mark.heckler@gmail.com, @mkheck)
  */
-public class LandController implements SerialPortEventListener {
+public class LandController extends Observable implements SerialPortEventListener {
     private Serial serial = null;
     private boolean connected;
     private String readBuffer = "";
@@ -103,6 +104,11 @@ public class LandController implements SerialPortEventListener {
 //        logIt("Stopping websockets");
 //        //dataMQTT.
         
+        if (this.countObservers() > 0) {
+            logIt("Disconnecting observers");
+            this.deleteObservers();
+        }
+        
         logIt("Closing serial port");
         return serial.disconnect();
     }
@@ -160,12 +166,21 @@ public class LandController implements SerialPortEventListener {
             try {
                 // Read all available data from serial port and add to buffer
                 readBuffer += serial.getSerialPort().readString(event.getEventValue());
-                if (readBuffer.endsWith("\n")) { // Check for end of buffer string
+                if (readBuffer.contains("\n")) {
+//                        .endsWith("\n")) { // Check for end of buffer string
                     String[] lines = readBuffer.split(">");
                     for (String line: lines) {
-                        System.out.println(">" + line);
+                        if (line.contains(":")) {
+                            this.setChanged();
+                            notifyObservers(line);
+                        }
                     }
-                    readBuffer = "";
+                    if (lines[lines.length - 1].endsWith("\n")) {
+                        readBuffer = "";
+                    } else {
+                        // Partial transmission in last parsed bucket; append to it.
+                        readBuffer = lines[lines.length - 1];
+                    }
 
                     // Send new request
                     // ???
@@ -188,6 +203,11 @@ public class LandController implements SerialPortEventListener {
         }
     }
 
+    @Override
+    public void notifyObservers(Object arg) {
+        super.notifyObservers(arg); //To change body of generated methods, choose Tools | Templates.
+    }
+    
     public void forward() {
         writeToSerial(FORWARD);
     }

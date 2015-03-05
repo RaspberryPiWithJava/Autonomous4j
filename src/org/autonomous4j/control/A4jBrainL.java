@@ -27,11 +27,8 @@ import org.autonomous4j.interfaces.A4jBrain2D;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.autonomous4j.listeners.xy.A4jLandListener;
 import org.autonomous4j.physical.LandController;
-//import org.autonomous4j.listeners.A4jErrorListener;
-//import org.autonomous4j.listeners.A4jNavDataListener;
-//import org.autonomous4j.listeners.A4jReadyStateChangeListener;
-//import org.autonomous4j.listeners.A4jVideoDataListener;
 import org.autonomous4j.tracking.A4jBlackBox;
 import org.autonomous4j.tracking.A4jBlackBox.Movement;
 
@@ -58,15 +55,8 @@ public class A4jBrainL implements A4jBrain2D {
     @Override
     public boolean connect() {
         try {
-//            controller = ParrotDroneController.build();
-//            //cfg = new Config("Autonomous4j Test", "My Profile", 0);
-//            controller.start();
-//
-//            //controller.addVideoDataListener(new A4jVideoDataListener());
-//            controller.addNavDataListener(new A4jNavDataListener());    
-//            controller.addReadyStateChangeListener(new A4jReadyStateChangeListener());
-//            controller.addErrorListener(new A4jErrorListener());
             controller.connect();
+            controller.addObserver(new A4jLandListener());
         } catch (Exception ex) {
             System.err.println("Exception creating new drone connection: " + ex.getMessage());
             return false;
@@ -207,26 +197,5 @@ public class A4jBrainL implements A4jBrain2D {
             
         // Re-enable recording
         isRecording = true;    
-    }
-    
-    /*
-    private float limit(float f, float min, float max) {
-        return (f > max ? max : (f < min ? min : f));
-    }
-
-    public A4jBrainL move(float roll ,float pitch, float gaz, float yaw) {
-        roll = limit(roll, -1f, 1f);
-        pitch = limit(pitch, -1f, 1f);
-        gaz = limit(gaz, -1f, 1f);
-        yaw = limit(yaw, -1f, 1f);
-        
-//        controller.move(roll, pitch, yaw, gaz);
-        
-        return this;
-    }
-
-    private float perc2float(int speed) {
-        return (float) (speed / 100.0f);
-    }
-    */
+    }    
 }

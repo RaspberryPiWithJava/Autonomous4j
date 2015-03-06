@@ -19,10 +19,10 @@ import static org.junit.Assert.*;
  *
  * @author mark
  */
-public class LandControllerTest {
-    LandController instance;
+public class A4jLandControllerTest {
+    A4jLandController instance;
     
-    public LandControllerTest() {
+    public A4jLandControllerTest() {
     }
     
     @BeforeClass
@@ -36,10 +36,10 @@ public class LandControllerTest {
     @Before
     public void setUp() {
         try {
-            instance = new LandController();
+            instance = new A4jLandController();
             instance.connect();
         } catch (Exception ex) {
-            Logger.getLogger(LandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -61,7 +61,7 @@ public class LandControllerTest {
             }
             instance.disconnect();
         } catch (Exception ex) {
-            Logger.getLogger(LandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     */
@@ -82,24 +82,24 @@ public class LandControllerTest {
                 }
             }
         } catch (Exception ex) {
-            Logger.getLogger(LandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     */
 
     /**
-     * Test of logIt method, of class LandController.
+     * Test of logIt method, of class A4jLandController.
      */
     @Test
     public void testLogIt() {
         System.out.println("logIt");
         String entry = "Test entry.";
-        LandController.logIt(entry);
+        A4jLandController.logIt(entry);
 //        fail("The test case is a prototype.");
     }
 
     /**
-     * Test of serialEvent method, of class LandController.
+     * Test of serialEvent method, of class A4jLandController.
      */
     @Test
     public void testSerialEvent() {
@@ -109,12 +109,12 @@ public class LandControllerTest {
                     SerialPortEvent.RXCHAR, SerialPortEvent.RXCHAR);
             instance.serialEvent(event);
         } catch (Exception ex) {
-            Logger.getLogger(LandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }    
 
     /**
-     * Test of forward method, of class LandController.
+     * Test of forward method, of class A4jLandController.
      */
     @Test
     public void testForward() {
@@ -122,12 +122,12 @@ public class LandControllerTest {
             System.out.println("forward");
             instance.forward();
         } catch (Exception ex) {
-            Logger.getLogger(LandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     /**
-     * Test of back method, of class LandController.
+     * Test of back method, of class A4jLandController.
      */
     @Test
     public void testBack() {
@@ -135,12 +135,12 @@ public class LandControllerTest {
             System.out.println("back");
             instance.back();
         } catch (Exception ex) {
-            Logger.getLogger(LandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     /**
-     * Test of left method, of class LandController.
+     * Test of left method, of class A4jLandController.
      */
     @Test
     public void testLeft() {
@@ -148,12 +148,12 @@ public class LandControllerTest {
             System.out.println("left");
             instance.left();
         } catch (Exception ex) {
-            Logger.getLogger(LandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     /**
-     * Test of right method, of class LandController.
+     * Test of right method, of class A4jLandController.
      */
     @Test
     public void testRight() {
@@ -161,12 +161,12 @@ public class LandControllerTest {
             System.out.println("right");
             instance.right();
         } catch (Exception ex) {
-            Logger.getLogger(LandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     /**
-     * Test of stop method, of class LandController.
+     * Test of stop method, of class A4jLandController.
      */
     @Test
     public void testStop() {
@@ -174,7 +174,7 @@ public class LandControllerTest {
             System.out.println("stop");
             instance.stop();
         } catch (Exception ex) {
-            Logger.getLogger(LandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

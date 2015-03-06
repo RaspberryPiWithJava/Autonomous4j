@@ -38,7 +38,7 @@ import jssc.SerialPort;
 import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
 import jssc.SerialPortList;
-import static org.autonomous4j.physical.LandController.logIt;
+import static org.autonomous4j.physical.A4jLandController.logIt;
 //import org.thehecklers.piremote.model.LastReading;
 //import org.thehecklers.piremote.model.Reading;
 //import org.autonomous4j.mqtt.MQTTPublisher;
@@ -54,7 +54,15 @@ import static org.autonomous4j.physical.LandController.logIt;
  * @author Mark Heckler (mark.heckler@gmail.com, @mkheck)
  */
 
-public class Serial {    
+/**
+ * A4jSerial connects with JSSC library to specified serial port starting two
+ threads to read and write.SerialReader thread reads a line from the serial port, parses it, and 
+ stores it as ???.
+
+ On undeploy, the serial port is closed.
+ * @author Mark Heckler (mark.heckler@gmail.com, @mkheck)
+ */
+public class A4jSerial {    
 //    private CommPort commPort;
     private SerialPort serialPort;
 
@@ -115,7 +123,7 @@ public class Serial {
                 serialPort.closePort();
                 isConnected = false;
             } catch (SerialPortException ex) {
-                Logger.getLogger(Serial.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(A4jSerial.class.getName()).log(Level.SEVERE, null, ex);
             }
             logIt("Disconnecting: serial port closed.");
         }

@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.autonomous4j.listeners.xy.A4jLandListener;
-import org.autonomous4j.physical.LandController;
+import org.autonomous4j.physical.A4jLandController;
 import org.autonomous4j.tracking.A4jBlackBox;
 import org.autonomous4j.tracking.A4jBlackBox.Movement;
 
@@ -38,7 +38,7 @@ import org.autonomous4j.tracking.A4jBlackBox.Movement;
  */
 public class A4jBrainL implements A4jBrain2D {
     private static final A4jBrainL brain = new A4jBrainL();
-    private final LandController controller = new LandController();
+    private final A4jLandController controller = new A4jLandController();
     //private NavData currentNav;
     //private final A4jBlackBox recorder;
     private boolean isRecording;
@@ -56,7 +56,14 @@ public class A4jBrainL implements A4jBrain2D {
     public boolean connect() {
         try {
             controller.connect();
-            controller.addObserver(new A4jLandListener());
+            // Local MQTT server
+            controller.addObserver(new A4jLandListener().connect());
+            // Remote MQTT cloud server
+            controller.addObserver(
+                    new A4jLandListener("tcp://m11.cloudmqtt.com:14655")
+                        .setUserName("<userID>")
+                        .setPassword("<password>")
+                        .connect());
         } catch (Exception ex) {
             System.err.println("Exception creating new drone connection: " + ex.getMessage());
             return false;

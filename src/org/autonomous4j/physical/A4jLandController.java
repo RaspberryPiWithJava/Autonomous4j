@@ -38,8 +38,8 @@ import jssc.SerialPortException;
  *
  * @author Mark Heckler (mark.heckler@gmail.com, @mkheck)
  */
-public class LandController extends Observable implements SerialPortEventListener {
-    private Serial serial = null;
+public class A4jLandController extends Observable implements SerialPortEventListener {
+    private A4jSerial serial = null;
     private boolean connected;
     private String readBuffer = "";
 
@@ -59,7 +59,7 @@ public class LandController extends Observable implements SerialPortEventListene
         loadProperties();
 
         // Log detected ports
-        Serial.listPorts();
+        A4jSerial.listPorts();
 
         String portName = getProperty("serialPort");
         if (portName.isEmpty()) {
@@ -68,7 +68,7 @@ public class LandController extends Observable implements SerialPortEventListene
             Exception e = new Exception("Exception: Property 'serialPort' missing from A4jBrain.properties file.");
             throw e;
         } else {
-            serial = new Serial();
+            serial = new A4jSerial();
             try {
                 logIt("Connecting to serial port " + portName);
                 serial.connect(portName, this);
@@ -155,7 +155,7 @@ public class LandController extends Observable implements SerialPortEventListene
         try {
             serial.getSerialPort().writeString(command + "\r\n");
         } catch (SerialPortException ex) {
-            Logger.getLogger(LandController.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
             logIt("Exception writing to serial port: " + ex.getLocalizedMessage());
         }
     }

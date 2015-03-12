@@ -23,14 +23,6 @@
  */
 package org.autonomous4j.physical;
 
-//import gnu.io.CommPort;
-//import gnu.io.CommPortIdentifier;
-//import gnu.io.SerialPort;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import static java.lang.Thread.sleep;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,8 +31,6 @@ import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
 import jssc.SerialPortList;
 import static org.autonomous4j.physical.A4jLandController.logIt;
-//import org.thehecklers.piremote.model.LastReading;
-//import org.thehecklers.piremote.model.Reading;
 //import org.autonomous4j.mqtt.MQTTPublisher;
 /**
  * Serial connects with JSSC library to specified serial port starting two

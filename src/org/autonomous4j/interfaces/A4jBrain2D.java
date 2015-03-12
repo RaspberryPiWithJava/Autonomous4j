@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Mark A. Heckler
+ * Copyright 2015 Mark A. Heckler
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,22 +34,11 @@ import org.autonomous4j.tracking.A4jBlackBox;
  * (effectively) two dimensions: ALVs (Autonomous Land Vehicles) and ASVs 
  * (Autonomous Sea/Surface Vehicles).
  */
-public interface A4jBrain2D {
+public interface A4jBrain2D extends A4jBrain {
 
-    boolean connect();
-    void disconnect();
-
-    A4jBrain2D forward();    
-    A4jBrain2D backward();
-    A4jBrain2D left();
-    A4jBrain2D right();
-    A4jBrain2D stay();    
+    A4jBrain2D forward(long distance);
+    A4jBrain2D backward(long distance);
+    A4jBrain2D left(long degrees);
+    A4jBrain2D right(long degrees);
     
-    A4jBrain2D doFor(long ms);
-    A4jBrain2D hold(long ms);
-    
-    A4jBrain2D goHome();
-    A4jBrain2D replay();   
-
-    void processRecordedMovements(List<A4jBlackBox.Movement> moves);
 }

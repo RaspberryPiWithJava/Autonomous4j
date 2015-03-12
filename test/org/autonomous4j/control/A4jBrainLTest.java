@@ -145,7 +145,7 @@ public class A4jBrainLTest {
         System.out.println("forward");
         A4jBrainL instance = null;
         A4jBrainL expResult = null;
-        A4jBrainL result = instance.forward();
+        A4jBrainL result = instance.forward(50);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -159,7 +159,7 @@ public class A4jBrainLTest {
         System.out.println("forward");
         A4jBrainL instance = null;
         A4jBrainL expResult = null;
-        A4jBrainL result = instance.forward();
+        A4jBrainL result = instance.forward(50);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -173,7 +173,7 @@ public class A4jBrainLTest {
         System.out.println("backward");
         A4jBrainL instance = null;
         A4jBrainL expResult = null;
-        A4jBrainL result = instance.backward();
+        A4jBrainL result = instance.backward(50);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -187,7 +187,7 @@ public class A4jBrainLTest {
         System.out.println("backward");
         A4jBrainL instance = null;
         A4jBrainL expResult = null;
-        A4jBrainL result = instance.backward();
+        A4jBrainL result = instance.backward(50);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -201,7 +201,7 @@ public class A4jBrainLTest {
         System.out.println("goRight");
         A4jBrainL instance = null;
         A4jBrainL expResult = null;
-        A4jBrainL result = instance.right();
+        A4jBrainL result = instance.right(90);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -215,7 +215,7 @@ public class A4jBrainLTest {
         System.out.println("goLeft");
         A4jBrainL instance = null;
         A4jBrainL expResult = null;
-        A4jBrainL result = instance.left();
+        A4jBrainL result = instance.left(90);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -257,7 +257,7 @@ public class A4jBrainLTest {
         System.out.println("left");
         A4jBrainL instance = null;
         A4jBrainL expResult = null;
-        A4jBrainL result = instance.left();
+        A4jBrainL result = instance.left(60);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -271,7 +271,7 @@ public class A4jBrainLTest {
         System.out.println("right");
         A4jBrainL instance = null;
         A4jBrainL expResult = null;
-        A4jBrainL result = instance.right();
+        A4jBrainL result = instance.right(90);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -286,6 +286,50 @@ public class A4jBrainLTest {
         List<A4jBlackBox.Movement> moves = null;
         A4jBrainL instance = null;
         instance.processRecordedMovements(moves);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of connect method, of class A4jBrainL.
+     */
+    @Test
+    public void testConnect() {
+        System.out.println("connect");
+        A4jBrainL instance = null;
+        boolean expResult = false;
+        boolean result = instance.connect();
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of forward method, of class A4jBrainL.
+     */
+    @Test
+    public void testForward() {
+        System.out.println("forward");
+        long distance = 0L;
+        A4jBrainL instance = null;
+        A4jBrainL expResult = null;
+        A4jBrainL result = instance.forward(distance);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of backward method, of class A4jBrainL.
+     */
+    @Test
+    public void testBackward() {
+        System.out.println("backward");
+        long distance = 0L;
+        A4jBrainL instance = null;
+        A4jBrainL expResult = null;
+        A4jBrainL result = instance.backward(distance);
+        assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }

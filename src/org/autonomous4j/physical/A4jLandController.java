@@ -28,6 +28,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Observable;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jssc.SerialPortEvent;
@@ -38,10 +42,13 @@ import jssc.SerialPortException;
  *
  * @author Mark Heckler (mark.heckler@gmail.com, @mkheck)
  */
-public class A4jLandController extends Observable implements SerialPortEventListener {
-    private A4jSerial serial = null;
-    private boolean connected;
+public class A4jLandController extends Observable {
+    private boolean isConnected;
     private String readBuffer = "";
+    private String curCmd = "";
+    private CompletableFuture<String> future;
+    private CompletableFuture<String> response;
+    private final Executor executor = Executors.newSingleThreadExecutor();
 
     Properties applicationProps = new Properties();
     
@@ -68,15 +75,13 @@ public class A4jLandController extends Observable implements SerialPortEventList
             Exception e = new Exception("Exception: Property 'serialPort' missing from A4jBrain.properties file.");
             throw e;
         } else {
-            serial = new A4jSerial();
             try {
                 logIt("Connecting to serial port " + portName);
-                serial.connect(portName, this);
-                connected = serial.isConnected();
+                executor.execute(new SerialThread(portName));
             } catch (Exception e) {
                 logIt("Exception: Connection to serial port " + portName + " failed: "
                         + e.getMessage());
-                connected = false;
+                isConnected = false;
             }
         }
 
@@ -97,7 +102,7 @@ public class A4jLandController extends Observable implements SerialPortEventList
         }));
         */
             
-        return connected;
+        return isConnected;
     }
 
     public boolean disconnect() {
@@ -110,7 +115,9 @@ public class A4jLandController extends Observable implements SerialPortEventList
         }
         
         logIt("Closing serial port");
-        return serial.disconnect();
+        //return serial.disconnect();
+        // Kill the thread.
+        return true;//  Fix this (MAH)
     }
 
     public static void logIt(String reading) {
@@ -151,80 +158,142 @@ public class A4jLandController extends Observable implements SerialPortEventList
         return "";
     }
 
-    private void writeToSerial(String command) {
-        try {
-            serial.getSerialPort().writeString(command + "\r\n");
-        } catch (SerialPortException ex) {
-            Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
-            logIt("Exception writing to serial port: " + ex.getLocalizedMessage());
-        }
-    }
-
-    @Override
-    public void serialEvent(SerialPortEvent event) {
-        if (event.isRXCHAR() && event.getEventValue() > 0) { // Data is available
-            try {
-                // Read all available data from serial port and add to buffer
-                readBuffer += serial.getSerialPort().readString(event.getEventValue());
-                if (readBuffer.contains("\n")) {
-//                        .endsWith("\n")) { // Check for end of buffer string
-                    String[] lines = readBuffer.split(">");
-                    for (String line: lines) {
-                        if (line.contains(":")) {
-                            this.setChanged();
-                            notifyObservers(line);
-                        }
-                    }
-                    if (lines[lines.length - 1].endsWith("\n")) {
-                        readBuffer = "";
-                    } else {
-                        // Partial transmission in last parsed bucket; append to it.
-                        readBuffer = lines[lines.length - 1];
-                    }
-
-                    // Send new request
-                    // ???
-                }
-            } catch (SerialPortException ex) {
-                logIt("Exception reading serial port: " + ex.getLocalizedMessage());
-            }
-        } else if (event.isCTS()) {     // CTS line has changed state
-            if (event.getEventValue() == 1) { // Line is ON
-                logIt("CTS ON");
-            } else {
-                logIt("CTS OFF");
-            }
-        } else if (event.isDSR()) {     // DSR line has changed state
-            if (event.getEventValue() == 1) { // Line is ON
-                logIt("DSR ON");
-            } else {
-                logIt("DSR OFF");
-            }
-        }
+    private CompletableFuture<String> writeToSerial(String command) {
+        future = new CompletableFuture<>();
+        // Place command into the queue so the Serial thread can pick it up
+        curCmd = command + "\r\n";
+        return future;
     }
 
     @Override
     public void notifyObservers(Object arg) {
         super.notifyObservers(arg); //To change body of generated methods, choose Tools | Templates.
     }
-    
-    public void forward() {
-        writeToSerial(FORWARD);
+
+    public void forward(long distance) {
+        response = writeToSerial(FORWARD + distance);
+        try {
+            response.get();
+        } catch (InterruptedException | ExecutionException ex) {
+            Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    public void back() {
-        writeToSerial(BACK);
+    public void back(long distance) {
+        response = writeToSerial(BACK + distance);
+        try {
+            response.get();
+        } catch (InterruptedException | ExecutionException ex) {
+            Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    public void left() {
-        writeToSerial(LEFT);
+    public void left(long degrees) {
+        response = writeToSerial(LEFT + degrees);
+        try {
+            response.get();
+        } catch (InterruptedException | ExecutionException ex) {
+            Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    public void right() {
-        writeToSerial(RIGHT);
+    public void right(long degrees) {
+        response = writeToSerial(RIGHT + degrees);
+        try {
+            response.get();
+        } catch (InterruptedException | ExecutionException ex) {
+            Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void stop() {
-        writeToSerial(STOP);
+        response = writeToSerial(STOP);
+        try {
+            response.get();
+        } catch (InterruptedException | ExecutionException ex) {
+            Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private class SerialThread implements Runnable, SerialPortEventListener {
+        A4jSerial serial = new A4jSerial();
+        
+        public SerialThread(String portName) {
+            System.out.println("Creating SerialThread...");
+            try {
+                isConnected = serial.connect(portName, this);
+            } catch (Exception ex) {
+                Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        @Override
+        public void serialEvent(SerialPortEvent event) {
+            int pos;
+            System.out.println("In serialEvent()");
+
+            if (event.isRXCHAR() && event.getEventValue() > 0) { // Data is available
+                System.out.println("We have a character!");
+                try {
+                    // Read all available data from serial port and add to buffer
+                    readBuffer += serial.getSerialPort().readString(event.getEventValue());
+                    System.out.println("Buffer=" + readBuffer);
+                    if (readBuffer.contains("\n")) {
+                        System.out.println("Has a newline...");
+                        String[] lines = readBuffer.split(">");
+                        for (String line: lines) {
+                            if ((pos = line.indexOf(":")) > -1) {
+                                System.out.println("COMMAND ECHO RECEIVED: " + line);
+                                future.complete(line);
+                                System.out.println("LINE RECEIVED: " + line);
+                                setChanged();
+                                notifyObservers(line);
+                            }
+                        }
+                        if (lines[lines.length - 1].endsWith("\n")) {
+                            readBuffer = "";
+                        } else {
+                            // Partial transmission in last parsed bucket; append to it.
+                            readBuffer = lines[lines.length - 1];
+                        }
+
+                        // Send new request
+                        // ???
+                    }
+                } catch (SerialPortException ex) {
+                    logIt("Exception reading serial port: " + ex.getLocalizedMessage());
+                }
+            } else if (event.isCTS()) {     // CTS line has changed state
+                if (event.getEventValue() == 1) { // Line is ON
+                    logIt("CTS ON");
+                } else {
+                    logIt("CTS OFF");
+                }
+            } else if (event.isDSR()) {     // DSR line has changed state
+                if (event.getEventValue() == 1) { // Line is ON
+                    logIt("DSR ON");
+                } else {
+                    logIt("DSR OFF");
+                }
+            }
+        }        
+
+        @Override
+        public void run() {
+            System.out.println("In RUN!");
+            while (true) {
+                if (!curCmd.isEmpty()) {
+                    try {
+                        System.out.println("Writing " + curCmd);
+                        serial.getSerialPort().writeString(curCmd);
+                        curCmd = "";
+                    } catch (SerialPortException ex) {
+                        Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
+                        logIt("Exception writing to serial port: " + ex.getLocalizedMessage());
+                        future.complete(curCmd);
+                    }                
+                }
+            }
+        }
     }
 }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014, 2015 Mark A. Heckler
+ * Copyright 2015 Mark A. Heckler
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,28 @@
  */
 package org.autonomous4j.interfaces;
 
+import java.util.List;
+import org.autonomous4j.tracking.A4jBlackBox;
+
 /**
  *
  * @author Mark Heckler (mark.heckler@gmail.com, @mkheck)
  * 
- * This interface is for autonomous direction of vehicles that operate in 
- * three dimensions: AAVs (Autonomous Aerial Vehicles) and AUVs 
- * (Autonomous Undersea/Underwater Vehicles).
+ * This interface is an abstraction for autonomous direction of vehicles, 
+ * regardless of medium.
  */
-public interface A4jBrain3D extends A4jBrain {
+public interface A4jBrain {
 
-    A4jBrain3D forward();
-    A4jBrain3D backward();
-    A4jBrain3D left();
-    A4jBrain3D right();
+    boolean connect();
+    void disconnect();
 
-    A4jBrain3D up();
-    A4jBrain3D down();
+    A4jBrain doFor(long ms);
+    A4jBrain hold(long ms);
+    A4jBrain stay();
+    
+    A4jBrain goHome();
+    A4jBrain replay();   
+
+    void processRecordedMovements(List<A4jBlackBox.Movement> moves);
+    
 }

@@ -100,18 +100,19 @@ public class A4jLandControllerTest {
 
     /**
      * Test of serialEvent method, of class A4jLandController.
+     * Moved to inner class - MAH.
      */
-    @Test
-    public void testSerialEvent() {
-        try {
-            System.out.println("serialEvent");
-            SerialPortEvent event = new SerialPortEvent("/dev/tty.usbmodem1a1221", 
-                    SerialPortEvent.RXCHAR, SerialPortEvent.RXCHAR);
-            instance.serialEvent(event);
-        } catch (Exception ex) {
-            Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }    
+//    @Test
+//    public void testSerialEvent() {
+//        try {
+//            System.out.println("serialEvent");
+//            SerialPortEvent event = new SerialPortEvent("/dev/tty.usbmodem1a1221", 
+//                    SerialPortEvent.RXCHAR, SerialPortEvent.RXCHAR);
+//            instance.serialEvent(event);
+//        } catch (Exception ex) {
+//            Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//    }    
 
     /**
      * Test of forward method, of class A4jLandController.
@@ -120,7 +121,7 @@ public class A4jLandControllerTest {
     public void testForward() {
         try {
             System.out.println("forward");
-            instance.forward();
+            instance.forward(50);
         } catch (Exception ex) {
             Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -133,7 +134,7 @@ public class A4jLandControllerTest {
     public void testBack() {
         try {
             System.out.println("back");
-            instance.back();
+            instance.back(50);
         } catch (Exception ex) {
             Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -146,7 +147,7 @@ public class A4jLandControllerTest {
     public void testLeft() {
         try {
             System.out.println("left");
-            instance.left();
+            instance.left(50);
         } catch (Exception ex) {
             Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -159,7 +160,7 @@ public class A4jLandControllerTest {
     public void testRight() {
         try {
             System.out.println("right");
-            instance.right();
+            instance.right(50);
         } catch (Exception ex) {
             Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -176,5 +177,46 @@ public class A4jLandControllerTest {
         } catch (Exception ex) {
             Logger.getLogger(A4jLandControllerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    /**
+     * Test of connect method, of class A4jLandController.
+     */
+    @Test
+    public void testConnect() throws Exception {
+        System.out.println("connect");
+        A4jLandController instance = new A4jLandController();
+        boolean expResult = false;
+        boolean result = instance.connect();
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of disconnect method, of class A4jLandController.
+     */
+    @Test
+    public void testDisconnect() {
+        System.out.println("disconnect");
+        A4jLandController instance = new A4jLandController();
+        boolean expResult = false;
+        boolean result = instance.disconnect();
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
+    }
+
+    /**
+     * Test of notifyObservers method, of class A4jLandController.
+     */
+    @Test
+    public void testNotifyObservers() {
+        System.out.println("notifyObservers");
+        Object arg = null;
+        A4jLandController instance = new A4jLandController();
+        instance.notifyObservers(arg);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
     }
 }

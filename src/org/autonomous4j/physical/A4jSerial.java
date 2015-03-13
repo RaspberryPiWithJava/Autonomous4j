@@ -111,7 +111,6 @@ public class A4jSerial {
                     // serialPort (directly) and handle properly. MAH
                 }
                 serialPort.closePort();
-                isConnected = false;
             } catch (SerialPortException ex) {
                 Logger.getLogger(A4jSerial.class.getName()).log(Level.SEVERE, null, ex);
             }

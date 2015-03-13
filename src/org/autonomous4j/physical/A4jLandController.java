@@ -28,10 +28,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Observable;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jssc.SerialPortEvent;
@@ -46,9 +48,11 @@ public class A4jLandController extends Observable {
     private boolean isConnected;
     private String readBuffer = "";
     private String curCmd = "";
+    private A4jSerial serial = new A4jSerial();
     private CompletableFuture<String> future;
     private CompletableFuture<String> response;
-    private final Executor executor = Executors.newSingleThreadExecutor();
+    private Future<String> serialThreadCallable;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     Properties applicationProps = new Properties();
     
@@ -77,7 +81,13 @@ public class A4jLandController extends Observable {
         } else {
             try {
                 logIt("Connecting to serial port " + portName);
-                executor.execute(new SerialThread(portName));
+                /*
+                    "If you would like to use a Future for the sake of cancellability but not provide 
+                    a usable result, you can declare types of the form Future<?> and return null as a 
+                    result of the underlying task."
+                */
+                serialThreadCallable = executor.submit(new SerialThread(portName));
+                //isConnected = true; This is set in the serial.connect() method for realz...
             } catch (Exception e) {
                 logIt("Exception: Connection to serial port " + portName + " failed: "
                         + e.getMessage());
@@ -113,11 +123,16 @@ public class A4jLandController extends Observable {
             logIt("Disconnecting observers");
             this.deleteObservers();
         }
+
+        if (isConnected) {
+            logIt("Closing serial port");
+            isConnected = serial.disconnect();
+            serialThreadCallable.cancel(true);
+            executor.shutdownNow();
+        }
         
-        logIt("Closing serial port");
-        //return serial.disconnect();
-        // Kill the thread.
-        return true;//  Fix this (MAH)
+        //return (serialThreadCallable.isCancelled() || serialThreadCallable.isDone());
+        return isConnected;
     }
 
     public static void logIt(String reading) {
@@ -215,8 +230,8 @@ public class A4jLandController extends Observable {
         }
     }
 
-    private class SerialThread implements Runnable, SerialPortEventListener {
-        A4jSerial serial = new A4jSerial();
+    private class SerialThread implements Callable, SerialPortEventListener {
+//        A4jSerial serial = new A4jSerial();
         
         public SerialThread(String portName) {
             System.out.println("Creating SerialThread...");
@@ -230,24 +245,22 @@ public class A4jLandController extends Observable {
         @Override
         public void serialEvent(SerialPortEvent event) {
             int pos;
-            System.out.println("In serialEvent()");
 
             if (event.isRXCHAR() && event.getEventValue() > 0) { // Data is available
-                System.out.println("We have a character!");
                 try {
                     // Read all available data from serial port and add to buffer
                     readBuffer += serial.getSerialPort().readString(event.getEventValue());
-                    System.out.println("Buffer=" + readBuffer);
                     if (readBuffer.contains("\n")) {
-                        System.out.println("Has a newline...");
                         String[] lines = readBuffer.split(">");
                         for (String line: lines) {
                             if ((pos = line.indexOf(":")) > -1) {
                                 System.out.println("COMMAND ECHO RECEIVED: " + line);
                                 future.complete(line);
-                                System.out.println("LINE RECEIVED: " + line);
                                 setChanged();
                                 notifyObservers(line);
+                            } else {
+                                // Reading feedback from microcontroller
+                                System.out.println("Direct passthrough: " + line);
                             }
                         }
                         if (lines[lines.length - 1].endsWith("\n")) {
@@ -279,12 +292,11 @@ public class A4jLandController extends Observable {
         }        
 
         @Override
-        public void run() {
-            System.out.println("In RUN!");
+        public Object call() throws Exception {
             while (true) {
                 if (!curCmd.isEmpty()) {
                     try {
-                        System.out.println("Writing " + curCmd);
+                        //System.out.println("Writing " + curCmd);
                         serial.getSerialPort().writeString(curCmd);
                         curCmd = "";
                     } catch (SerialPortException ex) {

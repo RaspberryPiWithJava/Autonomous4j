@@ -23,6 +23,7 @@
  */
 package org.autonomous4j.control;
 
+import java.util.ArrayList;
 import org.autonomous4j.interfaces.A4jBrain2D;
 import java.util.List;
 import java.util.logging.Level;
@@ -39,6 +40,7 @@ import org.autonomous4j.tracking.A4jBlackBox.Movement;
 public class A4jBrainL implements A4jBrain2D {
     private static final A4jBrainL brain = new A4jBrainL();
     private final A4jLandController controller = new A4jLandController();
+    private final List<A4jLandListener> listeners = new ArrayList<>();
     //private NavData currentNav;
     //private final A4jBlackBox recorder;
     private boolean isRecording;
@@ -57,16 +59,14 @@ public class A4jBrainL implements A4jBrain2D {
         try {
             controller.connect();
             // Local MQTT server
-            controller.addObserver(new A4jLandListener().connect());
-            // Remote MQTT cloud server
-//            controller.addObserver(
-//                    new A4jLandListener("tcp://m11.cloudmqtt.com:14655")
-//                        .setUserName("<userID>")
-//                        .setPassword("<password>")
-//                        .connect());
-            controller.addObserver(
-                    new A4jLandListener("tcp://iot.eclipse.org:1883")
-                        .connect());
+            listeners.add(new A4jLandListener());
+            // Remote MQTT cloud servers
+//            listeners.add(new A4jLandListener("tcp://m11.cloudmqtt.com:14655")
+//                    .setUserName("<userID>")
+//                    .setPassword("<password>"));
+            listeners.add(new A4jLandListener("tcp://iot.eclipse.org:1883"));
+            
+            listeners.stream().forEach((listener) -> controller.addObserver(listener.connect()));
 
         } catch (Exception ex) {
             System.err.println("Exception creating new drone connection: " + ex.getMessage());
@@ -78,6 +78,12 @@ public class A4jBrainL implements A4jBrain2D {
     @Override
     public void disconnect() {
         if (controller != null) {
+            if (!listeners.isEmpty()) {
+                listeners.stream().forEach((listener) -> listener.disconnect());
+                
+                controller.deleteObservers();
+            }
+            
             controller.disconnect();
         }
         //recorder.shutdown();

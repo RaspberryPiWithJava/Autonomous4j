@@ -58,6 +58,14 @@ public class A4jLandListener implements A4jPublisher, Observer {
         }
     }
     
+    public void disconnect() {
+        try {
+            client.disconnect();
+        } catch (MqttException ex) {
+            Logger.getLogger(A4jLandListener.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     @Override
     public String getTopLevelTopic() {
         return TOP_LEVEL_TOPIC;

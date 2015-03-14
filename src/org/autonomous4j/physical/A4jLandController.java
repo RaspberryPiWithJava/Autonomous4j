@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Mark A. Heckler
+ * Copyright 2015 Mark A. Heckler
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +28,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Observable;
 import java.util.Properties;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jssc.SerialPortEvent;
@@ -41,7 +39,9 @@ import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
 
 /**
- *
+ * A4jLandController orchestrates communication between the A4jBrainL class, 
+ * which operates ALVIN, and the underlying microcontroller.
+ * 
  * @author Mark Heckler (mark.heckler@gmail.com, @mkheck)
  */
 public class A4jLandController extends Observable {
@@ -51,7 +51,6 @@ public class A4jLandController extends Observable {
     private A4jSerial serial = new A4jSerial();
     private CompletableFuture<String> future;
     private CompletableFuture<String> response;
-    private Future<String> serialThreadCallable;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     Properties applicationProps = new Properties();
@@ -63,6 +62,7 @@ public class A4jLandController extends Observable {
     private static final String STOP = "S:";
 
 //    private ReadingPublisher dataMQTT;
+    
     public boolean connect() throws Exception {
         // Initialize the log (PrintStream with autoflush)
         // ALWAYS start the logging FIRST!
@@ -81,12 +81,7 @@ public class A4jLandController extends Observable {
         } else {
             try {
                 logIt("Connecting to serial port " + portName);
-                /*
-                    "If you would like to use a Future for the sake of cancellability but not provide 
-                    a usable result, you can declare types of the form Future<?> and return null as a 
-                    result of the underlying task."
-                */
-                serialThreadCallable = executor.submit(new SerialThread(portName));
+                executor.submit(new SerialThread(portName));
                 //isConnected = true; This is set in the serial.connect() method for realz...
             } catch (Exception e) {
                 logIt("Exception: Connection to serial port " + portName + " failed: "
@@ -105,13 +100,7 @@ public class A4jLandController extends Observable {
 //            dataMQTT = new ReadingPublisher(uriDataMQTT, sensorID, "data");
 //            serial.addPublisher(dataMQTT);
 //        }
-        /*
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Disconnecting via shutdown hook");
-            this.disconnect();
-        }));
-        */
-            
+
         return isConnected;
     }
 
@@ -127,11 +116,9 @@ public class A4jLandController extends Observable {
         if (isConnected) {
             logIt("Closing serial port");
             isConnected = serial.disconnect();
-            serialThreadCallable.cancel(true);
             executor.shutdownNow();
         }
         
-        //return (serialThreadCallable.isCancelled() || serialThreadCallable.isDone());
         return isConnected;
     }
 
@@ -182,7 +169,7 @@ public class A4jLandController extends Observable {
 
     @Override
     public void notifyObservers(Object arg) {
-        super.notifyObservers(arg); //To change body of generated methods, choose Tools | Templates.
+        super.notifyObservers(arg);
     }
 
     public void forward(long distance) {
@@ -230,8 +217,8 @@ public class A4jLandController extends Observable {
         }
     }
 
-    private class SerialThread implements Callable, SerialPortEventListener {
-//        A4jSerial serial = new A4jSerial();
+    private class SerialThread implements Runnable, SerialPortEventListener {
+        String cmdOnTheWire = "";
         
         public SerialThread(String portName) {
             System.out.println("Creating SerialThread...");
@@ -245,7 +232,7 @@ public class A4jLandController extends Observable {
         @Override
         public void serialEvent(SerialPortEvent event) {
             int pos;
-
+            
             if (event.isRXCHAR() && event.getEventValue() > 0) { // Data is available
                 try {
                     // Read all available data from serial port and add to buffer
@@ -257,7 +244,7 @@ public class A4jLandController extends Observable {
                                 System.out.println("COMMAND ECHO RECEIVED: " + line);
                                 future.complete(line);
                                 setChanged();
-                                notifyObservers(line);
+                                notifyObservers(cmdOnTheWire);
                             } else {
                                 // Reading feedback from microcontroller
                                 System.out.println("Direct passthrough: " + line);
@@ -269,9 +256,6 @@ public class A4jLandController extends Observable {
                             // Partial transmission in last parsed bucket; append to it.
                             readBuffer = lines[lines.length - 1];
                         }
-
-                        // Send new request
-                        // ???
                     }
                 } catch (SerialPortException ex) {
                     logIt("Exception reading serial port: " + ex.getLocalizedMessage());
@@ -292,12 +276,12 @@ public class A4jLandController extends Observable {
         }        
 
         @Override
-        public Object call() throws Exception {
-            while (true) {
+        public void run() {
+            while (isConnected) {
                 if (!curCmd.isEmpty()) {
                     try {
-                        //System.out.println("Writing " + curCmd);
                         serial.getSerialPort().writeString(curCmd);
+                        cmdOnTheWire = curCmd;  // Save entire command for publishing via MQTT
                         curCmd = "";
                     } catch (SerialPortException ex) {
                         Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);

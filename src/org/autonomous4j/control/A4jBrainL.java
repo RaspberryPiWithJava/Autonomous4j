@@ -60,6 +60,7 @@ public class A4jBrainL implements A4jBrain2D {
             controller.connect();
             // Local MQTT server
             listeners.add(new A4jLandListener());
+            
             // Remote MQTT cloud servers
 //            listeners.add(new A4jLandListener("tcp://m11.cloudmqtt.com:14655")
 //                    .setUserName("<userID>")
@@ -80,7 +81,8 @@ public class A4jBrainL implements A4jBrain2D {
         if (controller != null) {
             if (!listeners.isEmpty()) {
                 listeners.stream().forEach((listener) -> listener.disconnect());
-                
+                // After disconnecting the listeners from their respective MQTT 
+                // servers, we now delete the controller's references to them.
                 controller.deleteObservers();
             }
             

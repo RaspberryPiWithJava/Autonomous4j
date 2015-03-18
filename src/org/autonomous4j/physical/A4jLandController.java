@@ -26,6 +26,8 @@ package org.autonomous4j.physical;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
@@ -48,19 +50,14 @@ public class A4jLandController extends Observable {
     private boolean isConnected;
     private String readBuffer = "";
     private String curCmd = "";
-    private A4jSerial serial = new A4jSerial();
+    private List<String> commands = new ArrayList<>();
+    private final A4jSerial serial = new A4jSerial();
     private CompletableFuture<String> future;
     private CompletableFuture<String> response;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     Properties applicationProps = new Properties();
     
-    private static final String FORWARD = "F:";
-    private static final String BACK = "B:";
-    private static final String LEFT = "L:";
-    private static final String RIGHT = "R:";
-    private static final String STOP = "S:";
-
 //    private ReadingPublisher dataMQTT;
     
     public boolean connect() throws Exception {
@@ -173,7 +170,8 @@ public class A4jLandController extends Observable {
     }
 
     public void forward(long distance) {
-        response = writeToSerial(FORWARD + distance);
+        commands.add(DroneCommand.FORWARD.getDescription() + " " + distance + " cm.");
+        response = writeToSerial(DroneCommand.FORWARD.getCommand() + distance);
         try {
             response.get();
         } catch (InterruptedException | ExecutionException ex) {
@@ -182,7 +180,8 @@ public class A4jLandController extends Observable {
     }
 
     public void back(long distance) {
-        response = writeToSerial(BACK + distance);
+        commands.add(DroneCommand.BACK.getDescription() + " " + distance + " cm.");
+        response = writeToSerial(DroneCommand.BACK.getCommand() + distance);
         try {
             response.get();
         } catch (InterruptedException | ExecutionException ex) {
@@ -191,7 +190,8 @@ public class A4jLandController extends Observable {
     }
 
     public void left(long degrees) {
-        response = writeToSerial(LEFT + degrees);
+        commands.add(DroneCommand.LEFT.getDescription() + " " + degrees + " degrees.");
+        response = writeToSerial(DroneCommand.LEFT.getCommand() + degrees);
         try {
             response.get();
         } catch (InterruptedException | ExecutionException ex) {
@@ -200,7 +200,8 @@ public class A4jLandController extends Observable {
     }
 
     public void right(long degrees) {
-        response = writeToSerial(RIGHT + degrees);
+        commands.add(DroneCommand.RIGHT.getDescription() + " " + degrees + " degrees.");
+        response = writeToSerial(DroneCommand.RIGHT.getCommand() + degrees);
         try {
             response.get();
         } catch (InterruptedException | ExecutionException ex) {
@@ -209,7 +210,8 @@ public class A4jLandController extends Observable {
     }
 
     public void stop() {
-        response = writeToSerial(STOP);
+        commands.add(DroneCommand.STOP.getDescription());
+        response = writeToSerial(DroneCommand.STOP.getCommand());
         try {
             response.get();
         } catch (InterruptedException | ExecutionException ex) {
@@ -217,8 +219,38 @@ public class A4jLandController extends Observable {
         }
     }
 
+    public void pingForward() {
+        commands.add(DroneCommand.PINGF.getDescription());
+        response = writeToSerial(DroneCommand.PINGF.getCommand());
+        try {
+            response.get();
+        } catch (InterruptedException | ExecutionException ex) {
+            Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
+        }        
+    }
+    
+    public void pingLeft() {
+        commands.add(DroneCommand.PINGL.getDescription());
+        response = writeToSerial(DroneCommand.PINGL.getCommand());
+        try {
+            response.get();
+        } catch (InterruptedException | ExecutionException ex) {
+            Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
+        }        
+    }
+    
+    public void pingRight() {
+        commands.add(DroneCommand.PINGR.getDescription());
+        response = writeToSerial(DroneCommand.PINGR.getCommand());
+        try {
+            response.get();
+        } catch (InterruptedException | ExecutionException ex) {
+            Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
+        }        
+    }
+    
     private class SerialThread implements Runnable, SerialPortEventListener {
-        String cmdOnTheWire = "";
+        //String cmdOnTheWire = "";
         
         public SerialThread(String portName) {
             System.out.println("Creating SerialThread...");
@@ -244,7 +276,8 @@ public class A4jLandController extends Observable {
                                 System.out.println("COMMAND ECHO RECEIVED: " + line);
                                 future.complete(line);
                                 setChanged();
-                                notifyObservers(cmdOnTheWire);
+                                //notifyObservers(cmdOnTheWire);
+                                notifyObservers(commands.remove(0));
                             } else {
                                 // Reading feedback from microcontroller
                                 System.out.println("Direct passthrough: " + line);
@@ -281,7 +314,7 @@ public class A4jLandController extends Observable {
                 if (!curCmd.isEmpty()) {
                     try {
                         serial.getSerialPort().writeString(curCmd);
-                        cmdOnTheWire = curCmd;  // Save entire command for publishing via MQTT
+                        //cmdOnTheWire = curCmd;  // Save entire command for publishing via MQTT
                         curCmd = "";
                     } catch (SerialPortException ex) {
                         Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);

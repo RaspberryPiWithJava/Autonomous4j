@@ -70,9 +70,12 @@ public class A4jLandListener implements A4jPublisher, Observer {
         try {
             client = new MqttClient(serverURI, TOP_LEVEL_TOPIC + "listener");
             client.connect(connectOptions);
+            System.out.println("A4jLandListener: client connected to " + serverURI);
             return this;
         } catch (MqttException ex) {
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
+            System.out.println("A4jLandListener client failed to connect to " 
+                    + serverURI + ": " + ex.getLocalizedMessage());
             return this;
         }
     }
@@ -80,8 +83,10 @@ public class A4jLandListener implements A4jPublisher, Observer {
     public void disconnect() {
         try {
             client.disconnect();
+            System.out.println("A4jLandListener: client to " + serverURI + " disconnected.");
         } catch (MqttException ex) {
             Logger.getLogger(A4jLandListener.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("A4jLandListener client disconnect issue for " + serverURI + ": " + ex.getLocalizedMessage());
         }
     }
     
@@ -94,9 +99,13 @@ public class A4jLandListener implements A4jPublisher, Observer {
     public void publish() {
         try {
             msg.setPayload(this.text.getBytes());
+            System.out.println("A4jLandListener publishing to " + serverURI 
+                    + ": " + this.text);
             client.publish(TOP_LEVEL_TOPIC, msg);
+            System.out.println("A4jLandListener published message to " + serverURI + ".");
         } catch (MqttException ex) {
-            System.out.println("Exception publishing: " + ex.getLocalizedMessage());
+            System.out.println("Exception publishing to " + serverURI + ": " 
+                    + ex.getLocalizedMessage());
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
         }
     }

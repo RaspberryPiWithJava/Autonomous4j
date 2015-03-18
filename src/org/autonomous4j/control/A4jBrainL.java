@@ -44,6 +44,8 @@ public class A4jBrainL implements A4jBrain2D {
     //private NavData currentNav;
     //private final A4jBlackBox recorder;
     private boolean isRecording;
+    
+    public enum Direction {LEFT, RIGHT};
 
     private A4jBrainL() {
         //this.recorder = new A4jBlackBox();
@@ -104,7 +106,7 @@ public class A4jBrainL implements A4jBrain2D {
     
     @Override
     public A4jBrainL hold(long ms) {
-        System.out.println("Hold for " + ms + " milliseconds...");
+        System.out.println("Brain.hold for " + ms + " milliseconds...");
         try {
             Thread.sleep(ms);
             if (isRecording) {
@@ -120,7 +122,7 @@ public class A4jBrainL implements A4jBrain2D {
 
     @Override
     public A4jBrainL stay() {
-        System.out.println("--Stay--");
+        System.out.println("Brain.stay");
         controller.stop();
         if (isRecording) {
             //recorder.recordAction(A4jBlackBox.Action.STAY);
@@ -131,7 +133,7 @@ public class A4jBrainL implements A4jBrain2D {
 
     @Override
     public A4jBrainL forward(long distance) {
-        System.out.println("Forward");
+        System.out.println("Brain.forward");
         if (isRecording) {
             //recorder.recordAction(A4jBlackBox.Action.FORWARD, speed);
         }
@@ -142,7 +144,7 @@ public class A4jBrainL implements A4jBrain2D {
 
     @Override
     public A4jBrainL backward(long distance) {
-        System.out.println("Backward");
+        System.out.println("Brain.backward");
         if (isRecording) {
             //recorder.recordAction(A4jBlackBox.Action.BACKWARD, speed);
         }
@@ -150,7 +152,37 @@ public class A4jBrainL implements A4jBrain2D {
         controller.back(distance);
         return this;
     }
+    
+    public A4jBrainL doBox(A4jBrainL.Direction dir, long cmMaxDistance) {
+        forward(cmMaxDistance/2); // N center of box
+        turn(dir);
+        forward(cmMaxDistance/2); // To NW corner
+        turn(dir);
+        forward(cmMaxDistance); // To SW corner
+        turn(dir);
+        forward(cmMaxDistance); // To SE corner
+        turn(dir);
+        forward(cmMaxDistance); // To NE corner
+        turn(dir);
+        forward(cmMaxDistance/2); // Return to N center
+        turn(dir);
+        forward(cmMaxDistance/2); // Return to box center (approximadamente)
+        turn(dir);  // Turn twice to return to original bearing (mas o menos)
+        turn(dir);
+        
+        return this;
+    }
 
+    private A4jBrainL turn(A4jBrainL.Direction dir) {
+        if (dir == Direction.LEFT) {
+            left(90);
+        } else { // Direction.RIGHT
+            right(90);
+        }
+        
+        return this;
+    }
+    
     @Override
     public A4jBrainL goHome() {
         //processRecordedMovements(recorder.home());

@@ -45,7 +45,7 @@ public class A4jBrainL implements A4jBrain2D {
     //private final A4jBlackBox recorder;
     private boolean isRecording;
     
-    public enum Direction {LEFT, RIGHT};
+    public enum Direction {LEFT, RIGHT, FORWARD};
 
     private A4jBrainL() {
         //this.recorder = new A4jBlackBox();
@@ -151,6 +151,60 @@ public class A4jBrainL implements A4jBrain2D {
 
         controller.back(distance);
         return this;
+    }
+    
+    /*
+        This will choose "best" direction based upon how close 
+    */
+    public A4jBrainL patrolPerimeter() {
+        long distF, distL, distR, distFromWall, distToCorner;
+        Direction startDir, turnDir;
+        final long STOP_DIST = 40;
+        
+        distL = controller.pingLeft();
+        distR = controller.pingRight();
+        distF = controller.pingForward();
+
+        // ClosER wall wins the prize
+        turnDir = distL < distR ? Direction.LEFT : Direction.RIGHT;
+        // ClosEST wall wins the grand prize
+        startDir = distF < Math.min(distL, distR) ? Direction.FORWARD : turnDir;
+        
+        if (startDir != Direction.FORWARD) {
+            // Turn to face target (closest) wall
+            turn(turnDir);
+        }
+        // The rest of the pattern is identical until the final positioning movement
+        // We do capture the initial position of the drone from the wall, however
+        distFromWall = pingMove(STOP_DIST);
+        turn(turnDir);
+        distToCorner = pingMove(STOP_DIST);
+        turn(turnDir);
+        pingMove(STOP_DIST);
+        turn(turnDir);
+        pingMove(STOP_DIST);
+        turn(turnDir);
+        pingMove(STOP_DIST);
+        turn(turnDir);
+        pingMove(distToCorner);
+        turn(turnDir);
+        pingMove(distFromWall);
+        turn(turnDir);          // Turn 180 degrees to regain initial bearing
+        if (startDir == Direction.FORWARD) {
+            turn(turnDir);
+        }
+        
+        return this;
+    }
+
+    private Long pingMove(Long stopDistance) {
+        Long distance = controller.pingForward();
+
+        forward((distance - stopDistance) > 0 ? 
+                distance - stopDistance : 
+                0);    // Stop specified distance (in cm) from wall        
+        
+        return distance;
     }
     
     public A4jBrainL doBox(A4jBrainL.Direction dir, long cmMaxDistance) {

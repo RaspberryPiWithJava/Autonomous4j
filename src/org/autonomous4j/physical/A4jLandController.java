@@ -219,34 +219,39 @@ public class A4jLandController extends Observable {
         }
     }
 
-    public void pingForward() {
+    public long pingForward() {
         commands.add(DroneCommand.PINGF.getDescription());
         response = writeToSerial(DroneCommand.PINGF.getCommand());
-        try {
-            response.get();
-        } catch (InterruptedException | ExecutionException ex) {
-            Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
-        }        
+        return pingDistance();
     }
     
-    public void pingLeft() {
+    public long pingLeft() {
         commands.add(DroneCommand.PINGL.getDescription());
         response = writeToSerial(DroneCommand.PINGL.getCommand());
-        try {
-            response.get();
-        } catch (InterruptedException | ExecutionException ex) {
-            Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
-        }        
+        return pingDistance();
     }
     
-    public void pingRight() {
+    public long pingRight() {
         commands.add(DroneCommand.PINGR.getDescription());
         response = writeToSerial(DroneCommand.PINGR.getCommand());
+        return pingDistance();
+    }
+    
+    private long pingDistance() {
+        int pos = 0;
+        long distance = 0;
+        String distStr;
         try {
-            response.get();
-        } catch (InterruptedException | ExecutionException ex) {
+            distStr = response.get();
+            if ((pos = distStr.indexOf(" ")) > -1) {
+                distStr = distStr.substring(0, pos);
+            }
+            
+            distance = Long.parseLong(distStr);
+        } catch (InterruptedException | ExecutionException | NumberFormatException ex) {
             Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
-        }        
+        }
+        return distance;
     }
     
     private class SerialThread implements Runnable, SerialPortEventListener {
@@ -274,10 +279,22 @@ public class A4jLandController extends Observable {
                         for (String line: lines) {
                             if ((pos = line.indexOf(":")) > -1) {
                                 System.out.println("COMMAND ECHO RECEIVED: " + line);
-                                future.complete(line);
+
+                                // Provide the number value accompanying the command, 
+                                // removing the newline if present.
+                                if (line.length() > pos + 1) {
+                                    future.complete(line.substring(pos + 1, 
+                                            line.endsWith("\n") ? line.length() - 2 : line.length() - 1));                                    
+                                } else {    // Nothing after the : (most commands)
+                                    future.complete("");
+                                }
                                 setChanged();
-                                //notifyObservers(cmdOnTheWire);
-                                notifyObservers(commands.remove(0));
+                                
+                                // May need to match command & return, esp if 
+                                // this changes to async treatment.
+                                if (!commands.isEmpty()) {
+                                    notifyObservers(commands.remove(0));
+                                }
                             } else {
                                 // Reading feedback from microcontroller
                                 System.out.println("Direct passthrough: " + line);

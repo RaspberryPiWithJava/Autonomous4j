@@ -58,8 +58,6 @@ public class A4jLandController extends Observable {
 
     Properties applicationProps = new Properties();
     
-//    private ReadingPublisher dataMQTT;
-    
     public boolean connect() throws Exception {
         // Initialize the log (PrintStream with autoflush)
         // ALWAYS start the logging FIRST!
@@ -87,24 +85,10 @@ public class A4jLandController extends Observable {
             }
         }
 
-//        String uriDataMQTT = getProperty("uriDataMQTT");
-//        if (uriWebSocket.isEmpty()) {
-//            // Get out of here!
-//            logIt("ERROR: Property 'uriDataMQTT' missing from PiRemote.properties file.");
-//            Exception e = new Exception("ERROR: Property 'uriDataMQTT' missing from PiRemote.properties file.");
-//            throw e;
-//        } else {
-//            dataMQTT = new ReadingPublisher(uriDataMQTT, sensorID, "data");
-//            serial.addPublisher(dataMQTT);
-//        }
-
         return isConnected;
     }
 
     public boolean disconnect() {
-//        logIt("Stopping websockets");
-//        //dataMQTT.
-        
         if (this.countObservers() > 0) {
             logIt("Disconnecting observers");
             this.deleteObservers();
@@ -255,8 +239,7 @@ public class A4jLandController extends Observable {
     }
     
     private class SerialThread implements Runnable, SerialPortEventListener {
-        //String cmdOnTheWire = "";
-        
+
         public SerialThread(String portName) {
             System.out.println("Creating SerialThread...");
             try {
@@ -331,7 +314,6 @@ public class A4jLandController extends Observable {
                 if (!curCmd.isEmpty()) {
                     try {
                         serial.getSerialPort().writeString(curCmd);
-                        //cmdOnTheWire = curCmd;  // Save entire command for publishing via MQTT
                         curCmd = "";
                     } catch (SerialPortException ex) {
                         Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);

@@ -23,8 +23,6 @@
  */
 package org.autonomous4j.interfaces;
 
-import java.util.List;
-import org.autonomous4j.tracking.A4jBlackBox;
 
 /**
  *

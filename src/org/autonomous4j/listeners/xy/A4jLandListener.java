@@ -99,13 +99,8 @@ public class A4jLandListener implements A4jPublisher, Observer {
     public void publish() {
         try {
             msg.setPayload(this.text.getBytes());
-            System.out.println("A4jLandListener publishing to " + serverURI 
-                    + ": " + this.text);
             client.publish(TOP_LEVEL_TOPIC, msg);
-            System.out.println("A4jLandListener published message to " + serverURI + ".");
         } catch (MqttException ex) {
-            System.out.println("Exception publishing to " + serverURI + ": " 
-                    + ex.getLocalizedMessage());
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
         }
     }

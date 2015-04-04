@@ -64,9 +64,10 @@ public class A4jBrainL implements A4jBrain2D {
             listeners.add(new A4jLandListener());
             
             // Remote MQTT cloud servers
-            listeners.add(new A4jLandListener("tcp://m11.cloudmqtt.com:14655")
-                    .setUserName("<userID>")
-                    .setPassword("<password>"));
+//            listeners.add(new A4jLandListener("tcp://m11.cloudmqtt.com:14655")
+//                    .setUserName("<userID>")
+//                    .setPassword("<password>"));
+            
             listeners.add(new A4jLandListener("tcp://iot.eclipse.org:1883"));
             
             listeners.stream().forEach((listener) -> controller.addObserver(listener.connect()));

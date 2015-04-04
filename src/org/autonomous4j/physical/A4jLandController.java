@@ -271,13 +271,13 @@ public class A4jLandController extends Observable {
                                 } else {    // Nothing after the : (most commands)
                                     future.complete("");
                                 }
-                                setChanged();
-                                
-                                // May need to match command & return, esp if 
-                                // this changes to async treatment.
-                                if (!commands.isEmpty()) {
-                                    notifyObservers(commands.remove(0));
-                                }
+//                                setChanged();
+//                                
+//                                // May need to match command & return, esp if 
+//                                // this changes to async treatment.
+//                                if (!commands.isEmpty()) {
+//                                    notifyObservers(commands.remove(0));
+//                                }
                             } else {
                                 // Reading feedback from microcontroller
                                 System.out.println("Direct passthrough: " + line);
@@ -319,7 +319,15 @@ public class A4jLandController extends Observable {
                         Logger.getLogger(A4jLandController.class.getName()).log(Level.SEVERE, null, ex);
                         logIt("Exception writing to serial port: " + ex.getLocalizedMessage());
                         future.complete(curCmd);
-                    }                
+                    } finally {
+                        setChanged();
+                                
+                        // May need to match command & return, esp if 
+                        // this changes to async treatment.
+                        if (!commands.isEmpty()) {
+                            notifyObservers(commands.remove(0));
+                        }
+                    }
                 }
             }
         }

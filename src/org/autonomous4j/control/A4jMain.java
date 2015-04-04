@@ -54,15 +54,15 @@ public class A4jMain {
         brain.takeoff().hold(6000);
         
         brain.forward(20).doFor(600);
-        brain.hover().hold(2000);
+        brain.stay().hold(2000);
         brain.goRight(20).doFor(600);
-        brain.hover().hold(2000);
+        brain.stay().hold(2000);
         brain.backward(20).doFor(400);
-        brain.hover().hold(2000);
+        brain.stay().hold(2000);
         brain.goLeft(20).doFor(900);
-        brain.hover().hold(2000);
+        brain.stay().hold(2000);
         brain.forward(20).doFor(500);
-        brain.hover().hold(2000);
+        brain.stay().hold(2000);
         
         brain.land();
     }
@@ -71,17 +71,17 @@ public class A4jMain {
         brain.takeoff().hold(6000);
 
         brain.forward(20).doFor(400);
-        brain.hover().hold(2000);
+        brain.stay().hold(2000);
         brain.goRight(20).doFor(400);
-        brain.hover().hold(2000);
+        brain.stay().hold(2000);
         brain.forward(20).doFor(400);
-        brain.hover().hold(2000);
+        brain.stay().hold(2000);
         brain.goRight(20).doFor(400);
-        brain.hover().hold(2000);
+        brain.stay().hold(2000);
         brain.backward(20).doFor(400);
-        brain.hover().hold(2000);
+        brain.stay().hold(2000);
         brain.goHome();
-        brain.hover().hold(2000);
+        brain.stay().hold(2000);
 
         brain.land();
     }
@@ -96,9 +96,9 @@ public class A4jMain {
     private static void doDemoFlightCocarde(A4jBrainA brain) {
         brain.takeoff().hold(6000);
         // Hover in place over cocarde/roundel, allowing demo of push/recover
-        brain.hover().doFor(3000);
+        brain.stay().doFor(3000);
         brain.playLedAnimation(LedAnimation.LEFT_GREEN_RIGHT_RED, 10, 3);
-        brain.hover().doFor(3000);
+        brain.stay().doFor(3000);
         
         brain.land();
     }        
@@ -107,13 +107,13 @@ public class A4jMain {
         brain.takeoff().hold(6000);
         
         brain.playLedAnimation(LedAnimation.BLING_GREEN, 10, 3);
-        brain.hover().hold(2000);
+        brain.stay().hold(2000);
         brain.playLedAnimation(LedAnimation.BLINK_RED, 10, 3);
-        brain.hover().hold(2000);
+        brain.stay().hold(2000);
 //        brain.playLedAnimation(LedAnimation.FIRE, 10, 3);
-//        brain.hover().hold(2000);
+//        brain.stay().hold(2000);
 //        brain.playLedAnimation(LedAnimation.DOUBLE_MISSILE, 10, 3);
-//        brain.hover().hold(2000);
+//        brain.stay().hold(2000);
         
         brain.land();
     }

@@ -154,6 +154,29 @@ public class A4jBrainL implements A4jBrain2D {
         return this;
     }
     
+    public A4jBrainL patrol() {
+        long distF, distL, distR;
+
+        // Save this so we can finish here (more or less)
+        distL = controller.pingLeft();
+        distR = controller.pingRight();
+        distF = controller.pingForward();
+
+        // The rest of the pattern is identical until the final positioning movement
+        // We do capture the initial position of the drone from the wall, however
+
+        for (int i=0; i<4;i++) {
+            forward(20);
+
+            distL = controller.pingLeft();
+            distR = controller.pingRight();
+            controller.pingForward();
+            turn(distL < distR ? Direction.LEFT : Direction.RIGHT, 180L);
+        }        
+
+        return this;        
+    }
+    
     /*
         This will choose "best" direction based upon how close 
     */
@@ -198,6 +221,38 @@ public class A4jBrainL implements A4jBrain2D {
         return this;
     }
 
+    /*
+        This will choose "best" direction based upon how far away
+    */
+    public A4jBrainL patrolBlanket() {
+        long distF, distL, distR, distFromWall, distToCorner;
+        Direction dir;
+        final long STOP_DIST = 50;
+        
+        for (int i=0; i<5;i++) {
+            distL = controller.pingLeft();
+            distR = controller.pingRight();
+            distF = controller.pingForward();
+
+            // Furthest wall wins the prize & determines best direction for turn
+            dir = distL > distR ? Direction.LEFT : Direction.RIGHT;
+        
+            // If ALVIN finds himself in a corner, he does a 180, then re-evaluates
+            if (Math.max(distF, Math.max(distL, distR)) < STOP_DIST) {
+                turn(dir, 180);
+            } else {
+                dir = distF > Math.max(distL, distR) ? Direction.FORWARD : dir;
+
+                if (dir != Direction.FORWARD) {
+                    turn(dir);
+                }
+                distFromWall = pingMove(STOP_DIST);
+            }
+        }
+        
+        return this;
+    }
+    
     private Long pingMove(Long stopDistance) {
         Long distance = controller.pingForward();
 
@@ -237,7 +292,17 @@ public class A4jBrainL implements A4jBrain2D {
         
         return this;
     }
-    
+
+    private A4jBrainL turn(A4jBrainL.Direction dir, long degrees) {
+        if (dir == Direction.LEFT) {
+            left(degrees);
+        } else { // Direction.RIGHT
+            right(degrees);
+        }
+        
+        return this;
+    }    
+
     @Override
     public A4jBrainL goHome() {
         //processRecordedMovements(recorder.home());

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Mark A. Heckler
+ * Copyright 2014, 2015 Mark A. Heckler
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,30 +38,63 @@ public class A4jMain {
         if (brain.connect("192.168.1.1")) {
             // Comment/uncomment for desired demo flight. May not want to combine
             // them without testing first in unoccupied room. :)
-//            doDemoFlightBox(brain);
+            doDemoFlightBox(brain);
+//            doDemoFlightBoxSmall(brain);
 //            doDemoFlightHome(brain);
 //            doDemoFlightReplay(brain);
-            doDemoFlightLeds(brain);
+//            doDemoFlightLeds(brain);
 //            doDemoFlightCocarde(brain);
+//            doDemoTakeoffLand(brain);
         }
         brain.disconnect();
 
         System.out.println("Exiting. So long and thanks for all the fish.");
         System.exit(0);
     }
+
+    private static void doDemoTakeoffLand(A4jBrain brain) {
+        brain.takeoff().hold(3000);
+        brain.land();
+    }
     
     private static void doDemoFlightBox(A4jBrain brain) {
         brain.takeoff().hold(6000);
         
-        brain.forward(20).doFor(600);
+        brain.forward(30).doFor(900);
+        brain.backward(30).doFor(150);
         brain.hover().hold(2000);
-        brain.goRight(20).doFor(600);
+        
+        brain.goRight(30).doFor(900);
+        brain.goLeft(30).doFor(150);
         brain.hover().hold(2000);
-        brain.backward(20).doFor(400);
+        
+        brain.backward(30).doFor(700);
+        brain.forward(30).doFor(150);
         brain.hover().hold(2000);
-        brain.goLeft(20).doFor(900);
+        
+        brain.goLeft(30).doFor(1000);
+        brain.goRight(30).doFor(150);
         brain.hover().hold(2000);
-        brain.forward(20).doFor(500);
+        
+        brain.forward(30).doFor(700);
+        brain.backward(30).doFor(150);
+        brain.hover().hold(2000);
+        
+        brain.land();
+    }
+
+    private static void doDemoFlightBoxSmall(A4jBrain brain) {
+        brain.takeoff().hold(6000);
+        
+        brain.forward(30).doFor(700);
+        brain.hover().hold(2000);
+        brain.goRight(30).doFor(700);
+        brain.hover().hold(2000);
+        brain.backward(30).doFor(500);
+        brain.hover().hold(2000);
+        brain.goLeft(30).doFor(800);
+        brain.hover().hold(2000);
+        brain.forward(30).doFor(500);
         brain.hover().hold(2000);
         
         brain.land();
@@ -70,15 +103,15 @@ public class A4jMain {
     private static void doDemoFlightHome(A4jBrain brain) {
         brain.takeoff().hold(6000);
 
-        brain.forward(20).doFor(400);
+        brain.forward(30).doFor(600);
         brain.hover().hold(2000);
-        brain.goRight(20).doFor(400);
+        brain.goRight(30).doFor(600);
         brain.hover().hold(2000);
-        brain.forward(20).doFor(400);
+        brain.forward(30).doFor(600);
         brain.hover().hold(2000);
-        brain.goRight(20).doFor(400);
+        brain.goRight(30).doFor(600);
         brain.hover().hold(2000);
-        brain.backward(20).doFor(400);
+        brain.backward(30).doFor(600);
         brain.hover().hold(2000);
         brain.goHome();
         brain.hover().hold(2000);
@@ -106,10 +139,10 @@ public class A4jMain {
     private static void doDemoFlightLeds(A4jBrain brain) {
         brain.takeoff().hold(6000);
         
-        brain.playLedAnimation(LedAnimation.BLING_GREEN, 10, 3);
-        brain.hover().hold(2000);
+//        brain.playLedAnimation(LedAnimation.BLING_GREEN, 10, 3);
+//        brain.hover().hold(3000);
         brain.playLedAnimation(LedAnimation.BLINK_RED, 10, 3);
-        brain.hover().hold(2000);
+        brain.hover().hold(3000);
 //        brain.playLedAnimation(LedAnimation.FIRE, 10, 3);
 //        brain.hover().hold(2000);
 //        brain.playLedAnimation(LedAnimation.DOUBLE_MISSILE, 10, 3);

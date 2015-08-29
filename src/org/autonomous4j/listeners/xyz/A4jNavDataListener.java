@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.autonomous4j.listeners;
+package org.autonomous4j.listeners.xyz;
 
 import com.dronecontrol.droneapi.data.NavData;
 import com.dronecontrol.droneapi.data.VisionTagData;

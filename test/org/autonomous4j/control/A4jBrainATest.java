@@ -34,9 +34,9 @@ import static org.junit.Assert.*;
  *
  * @author mark
  */
-public class A4jBrainTest {
+public class A4jBrainATest {
     
-    public A4jBrainTest() {
+    public A4jBrainATest() {
     }
     
     @BeforeClass
@@ -56,28 +56,28 @@ public class A4jBrainTest {
     }
 
     /**
-     * Test of getInstance method, of class A4jBrain.
+     * Test of getInstance method, of class A4jBrainA.
      */
     @Test
     public void testGetInstance() {
         System.out.println("getInstance");
-        A4jBrain instance = null;
+        A4jBrainA instance = null;
         //A4Brain expResult = null;
-        A4jBrain expResult = A4jBrain.getInstance();
-        A4jBrain result = A4jBrain.getInstance();
+        A4jBrainA expResult = A4jBrainA.getInstance();
+        A4jBrainA result = A4jBrainA.getInstance();
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         //fail("The test case is a prototype.");
     }
 
     /**
-     * Test of connect method, of class A4jBrain.
+     * Test of connect method, of class A4jBrainA.
      */
     @Test
     public void testConnect_0args() {
         System.out.println("connect");
-        //A4Brain instance = new A4jBrain();
-        A4jBrain instance = A4jBrain.getInstance();
+        //A4Brain instance = new A4jBrainA();
+        A4jBrainA instance = A4jBrainA.getInstance();
         boolean expResult = true;
         boolean result = instance.connect();
         assertEquals(expResult, result);
@@ -87,13 +87,13 @@ public class A4jBrainTest {
     }
 
     /**
-     * Test of connect method, of class A4jBrain.
+     * Test of connect method, of class A4jBrainA.
      */
     @Test
     public void testConnect_String() {
         System.out.println("connect");
         String ipAddress = "192.168.1.1";
-        A4jBrain instance = A4jBrain.getInstance();
+        A4jBrainA instance = A4jBrainA.getInstance();
         boolean expResult = true;
         boolean result = instance.connect(ipAddress);
         assertEquals(expResult, result);
@@ -103,14 +103,14 @@ public class A4jBrainTest {
     }
 
     /**
-     * Test of disconnect method, of class A4jBrain.
+     * Test of disconnect method, of class A4jBrainA.
      */
     @Test
     public void testDisconnect() {
         // Tested as part of connect() methods above.
 //        System.out.println("disconnect");
 //        // Have to connect to (independently) test disconnect method.
-//        A4jBrain instance = A4jBrain.getInstance();
+//        A4jBrainA instance = A4jBrainA.getInstance();
 //        instance.connect();
 //        instance.disconnect();
 //        // TODO review the generated test code and remove the default call to fail.

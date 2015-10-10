@@ -30,104 +30,159 @@ import com.dronecontrol.droneapi.data.enums.LedAnimation;
  * @author Mark Heckler (mark.heckler@gmail.com, @mkheck)
  */
 public class A4jMain {
+    enum BoxSize {SMALL, LARGE};
+    final int OPP_THRUST = 6;
+    final int HOVER_TIME = 2000;
+    final A4jBrainA brain = A4jBrainA.getInstance();
+    
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        final A4jBrainA brain = A4jBrainA.getInstance();
-        if (brain.connect("192.168.1.1")) {
-            // Comment/uncomment for desired demo flight. May not want to combine
-            // them without testing first in unoccupied room. :)
-            doDemoFlightBox(brain);
-//            doDemoFlightBoxSmall(brain);
-//            doDemoFlightHome(brain);
-//            doDemoFlightReplay(brain);
-//            doDemoFlightLeds(brain);
-//            doDemoFlightCocarde(brain);
-//            doDemoTakeoffLand(brain);
-        }
-        brain.disconnect();
+        if (args.length == 0) {
+            showHelp();
+        } else {
+            A4jMain controller = new A4jMain();
+            
+            if (controller.connect()) {
+                switch (args[0]) {
+                    case "BOX":
+                        controller.doDemoFlightBox(BoxSize.LARGE);
+                        break;
+                    case "HOME":
+                        controller.doDemoFlightHome();
+                        break;
+                    case "TAKEOFFLAND":
+                        controller.doDemoTakeoffLand();
+                        break;
+                    case "LEDS":
+                        controller.doDemoFlightLeds();
+                        break;
+                    case "COCARDE":
+                        controller.doDemoFlightCocarde();
+                        break;
+                    case "REPLAYBOX":
+                        controller.doDemoFlightReplay(BoxSize.LARGE);
+                        break;
+                    case "REPLAYSMALLBOX":
+                        controller.doDemoFlightReplay(BoxSize.SMALL);
+                        break;
+                    default: //"SMALLBOX"
+                        controller.doDemoFlightBox(BoxSize.SMALL);
+                        break;                    
+                }
+            }
+            controller.disconnect();
 
-        System.out.println("Exiting. So long and thanks for all the fish.");
-        System.exit(0);
+            System.out.println("Exiting. So long and thanks for all the fish.");
+            System.exit(0);
+        }
     }
 
-    private static void doDemoTakeoffLand(A4jBrainA brain) {
+    private static void showHelp() {
+        System.out.println("\nAutoFly (Autonomous4jGA) cheat sheet:\n");
+        System.out.println("java -jar AutoFly <pattern>");
+        System.out.println("...where <pattern> is replaced by one of the following:\n");
+        System.out.println("BOX\t\tNavigates a rather large box (exercise caution).");
+        System.out.println("SMALLBOX\tFlies a smaller, more manageable box pattern.");
+        System.out.println("HOME\t\tFlies pattern, then returns directly to departure point.");
+        System.out.println("TAKEOFFLAND\tTakes off, hovers a few seconds, & lands.");
+        System.out.println("LEDS\t\tCycles through LED patterns while hovering.");
+        System.out.println("COCARDE\t\tHovers over cocarde/roundel for short 'push' demo.");
+        System.out.println("REPLAYBOX\tPerforms BOX pattern, lands, then repeats from memory.\t");
+        System.out.println("REPLAYSMALLBOX\tPerforms SMALLBOX pattern, lands, then repeats from memory.\t");
+        System.out.println("\nRecommended pattern: SMALLBOX");
+        System.out.println("\nIf comm/control is lost, fly TAKEOFFLAND to restore & recover.\n\n");
+    }
+
+    private boolean connect() {
+        return brain.connect("192.168.1.1");
+    }
+    
+    private void disconnect() {
+        brain.disconnect();
+    }
+    
+    private void doDemoTakeoffLand() {
         brain.takeoff().hold(3000);
         brain.land();
     }
     
-    private static void doDemoFlightBox(A4jBrainA brain) {
-        brain.takeoff().hold(6000);
+    private void doDemoFlightBox(BoxSize size) {
+        int[] duration;
         
-        brain.forward(30).doFor(900);
-        brain.backward(30).doFor(150);
-        brain.hover().hold(2000);
+        if (size == BoxSize.SMALL) {
+            duration = new int[] {600, 600, 400, 900, 500};
+        } else {    // BoxSize.LARGE
+            duration = new int[] {900, 900, 700, 1000, 700};
+        }
+                
+        brain.takeoff().hold(HOVER_TIME * 3);
         
-        brain.goRight(30).doFor(900);
-        brain.goLeft(30).doFor(150);
-        brain.hover().hold(2000);
+        // "Offsetting" thrust maneuvers provide better indoor self-control :)
+        brain.forward(30).doFor(duration[0]);
+        brain.backward(30).doFor(duration[0]/OPP_THRUST);
+        brain.hover().hold(HOVER_TIME);
         
-        brain.backward(30).doFor(700);
-        brain.forward(30).doFor(150);
-        brain.hover().hold(2000);
+        brain.goRight(30).doFor(duration[1]);
+        brain.goLeft(30).doFor(duration[1]/OPP_THRUST);
+        brain.hover().hold(HOVER_TIME);
         
-        brain.goLeft(30).doFor(1000);
-        brain.goRight(30).doFor(150);
-        brain.hover().hold(2000);
+        brain.backward(30).doFor(duration[2]);
+        brain.forward(30).doFor(duration[2]/OPP_THRUST);
+        brain.hover().hold(HOVER_TIME);
         
-        brain.forward(30).doFor(700);
-        brain.backward(30).doFor(150);
-        brain.hover().hold(2000);
+        brain.goLeft(30).doFor(duration[3]);
+        brain.goRight(30).doFor(duration[3]/OPP_THRUST);
+        brain.hover().hold(HOVER_TIME);
         
-        brain.land();
-    }
-
-    private static void doDemoFlightBoxSmall(A4jBrainA brain) {
-        brain.takeoff().hold(6000);
-        
-        brain.forward(20).doFor(600);
-        brain.stay().hold(2000);
-        brain.goRight(20).doFor(600);
-        brain.stay().hold(2000);
-        brain.backward(20).doFor(400);
-        brain.stay().hold(2000);
-        brain.goLeft(20).doFor(900);
-        brain.stay().hold(2000);
-        brain.forward(20).doFor(500);
-        brain.stay().hold(2000);
+        brain.forward(30).doFor(duration[4]);
+        brain.backward(30).doFor(duration[4]/OPP_THRUST);
+        brain.hover().hold(HOVER_TIME);
         
         brain.land();
     }
 
-    private static void doDemoFlightHome(A4jBrainA brain) {
+    private void doDemoFlightHome() {
+        final int flightTime = 400;
+        
         brain.takeoff().hold(6000);
 
-        brain.forward(20).doFor(400);
-        brain.stay().hold(2000);
-        brain.goRight(20).doFor(400);
-        brain.stay().hold(2000);
-        brain.forward(20).doFor(400);
-        brain.stay().hold(2000);
-        brain.goRight(20).doFor(400);
-        brain.stay().hold(2000);
-        brain.backward(20).doFor(400);
-        brain.stay().hold(2000);
+        brain.forward(20).doFor(flightTime);
+        brain.backward(20).doFor(flightTime/OPP_THRUST);
+        brain.stay().hold(HOVER_TIME);
+        
+        brain.goRight(20).doFor(flightTime);
+        brain.goLeft(20).doFor(flightTime/OPP_THRUST);
+        brain.stay().hold(HOVER_TIME);
+        
+        brain.forward(20).doFor(flightTime);
+        brain.backward(20).doFor(flightTime/OPP_THRUST);
+        brain.stay().hold(HOVER_TIME);
+        
+        brain.goRight(20).doFor(flightTime);
+        brain.goLeft(20).doFor(flightTime/OPP_THRUST);
+        brain.stay().hold(HOVER_TIME);
+        
+        brain.backward(20).doFor(flightTime);
+        brain.forward(20).doFor(flightTime/OPP_THRUST);
+        brain.stay().hold(HOVER_TIME);
 
         brain.goHome();
-        brain.stay().hold(2000);
+        brain.stay().hold(HOVER_TIME);
 
         brain.land();
     }
     
-    private static void doDemoFlightReplay(A4jBrainA brain) {
-        doDemoFlightBox(brain);
+    private void doDemoFlightReplay(BoxSize size) {
+        doDemoFlightBox(size);
+        
         // Added two-second wait while on ground for effect
-        brain.hold(2000);
+        brain.hold(HOVER_TIME);
         brain.replay();
     }
     
-    private static void doDemoFlightCocarde(A4jBrainA brain) {
+    private void doDemoFlightCocarde() {
         brain.takeoff().hold(6000);
         // Hover in place over cocarde/roundel, allowing demo of push/recover
         brain.stay().doFor(3000);
@@ -137,17 +192,20 @@ public class A4jMain {
         brain.land();
     }        
 
-    private static void doDemoFlightLeds(A4jBrainA brain) {
+    private void doDemoFlightLeds() {
         brain.takeoff().hold(6000);
         
         brain.playLedAnimation(LedAnimation.BLING_GREEN, 10, 3);
-        brain.stay().hold(2000);
+        brain.stay().hold(HOVER_TIME);
+        
         brain.playLedAnimation(LedAnimation.BLINK_RED, 10, 3);
-        brain.stay().hold(2000);
+        brain.stay().hold(HOVER_TIME);
+        
         brain.playLedAnimation(LedAnimation.FIRE, 10, 3);
-        brain.stay().hold(2000);
+        brain.stay().hold(HOVER_TIME);
+        
         brain.playLedAnimation(LedAnimation.DOUBLE_MISSILE, 10, 3);
-        brain.stay().hold(2000);
+        brain.stay().hold(HOVER_TIME);
         
         brain.land();
     }
